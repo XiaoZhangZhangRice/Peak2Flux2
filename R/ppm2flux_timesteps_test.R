@@ -60,14 +60,10 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
 
   flux_df <- cbind(empty_column1=NA,flux_df,empty_column2=NA, empty_column3=NA, empty_column4=NA, empty_column5=NA,
                    empty_column6=NA, empty_column7=NA, empty_column8=NA, empty_column9=NA, empty_column10=NA, empty_column11=NA,
-                   empty_column12=NA, empty_column13=NA, empty_column14=NA, empty_column15=NA, empty_column16=NA, empty_column17=NA,
-                   empty_column18=NA, empty_column19=NA, empty_column20=NA, empty_column21=NA, empty_column22=NA, empty_column23=NA,
-                   empty_column24=NA, empty_column25=NA, empty_column26=NA)  ## Adds empty columns
+                   empty_column12=NA)  ## Adds empty columns
 
   colnames(flux_df) = c("Code_Nr", "ID", "Date", "CH4_flux_mgm2h", "R2_CH4", "p_CH4", "N2O_flux_mgm2h",
-                        "R2_N2O", "p_N2O", "CO2_flux_mgm2h", "R2_CO2", "p_CO2", "CH4_flux_Alt1", "R2_CH4_Alt1", "p_CH4_Alt1", "CH4_flux_Alt2",
-                        "R2_CH4_Alt2", "p_CH4_Alt2", "CH4_flux_Alt3", "R2_CH4_Alt3", "p_CH4_Alt3", "CH4_flux_Alt4", "R2_CH4_Alt4", "p_CH4_Alt4",
-                        "CH4_model", "CH4_flux_corrected", "R2_CH4_corrected", "Logic_CH4")
+                        "R2_N2O", "p_N2O", "CO2_flux_mgm2h", "R2_CO2", "p_CO2")
   }
 
   flux_df$Code_Nr <- 1:nrow(flux_df)
@@ -91,6 +87,9 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
       attributes(p) <- NULL
       return(p)}
     flux_df$p_CH4[i] <- lmp_i(lm_i) # Returns p-value for each Code.
+
+
+    if (Timesteps == 4) { # in case Timestep argument is left as default
 
     ## Loop section 2: Rate correction.
 
@@ -296,6 +295,8 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
 
     print(CH4_arrange)
 
+    } else { # in case Timestep argument is modified (not calculating alternative models)
+    }
   }
 
   dev.off()
