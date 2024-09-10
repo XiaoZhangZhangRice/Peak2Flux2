@@ -30,9 +30,9 @@ ppm2flux <- function(data) { # function(data, method = "lm", timesteps = "4", pp
       Volume_L = data$Surface_Area_cm2 * data$Height_cm / 1000000,
 
       # Here should do an if(), the following is for GCs returning CH4 ppm (default), but the if() should work for ppm_CH4 = "C-CH4"
-      CH4_density_g_m3 = (16.04 * 101.325 / (8.314 * Chamber_Temp_K)),
+      # CH4_density_g_m3 = (16.04 * 101325 / (8.314 * Chamber_Temp_K)),
 
-      # CH4_density_g_m3 = (16 / (82.0575 * Chamber_Temp_K)) * 1000000,
+      CH4_density_g_m3 = (16 / (82.0575 * Chamber_Temp_K)) * 1000000,
       N2O_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
       CO2_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
       CH4_byMass_mgm3 = (CH4_density_g_m3 * Sample_CH4_ppm) / 1000,
