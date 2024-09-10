@@ -1,6 +1,6 @@
-#standard_data <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux/Input_Files/Std_Input.csv")
+#standard_data <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Std_Input.csv")
 #str(standard_data)
-#sample_data <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux/Input_Files/Input_samples_No_ppm.csv")
+#sample_data <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_No_ppm.csv")
 
 # Step 1: Split the dataframe by GC_Run
 split_by_GC_Run <- function(data) {
@@ -9,8 +9,8 @@ split_by_GC_Run <- function(data) {
 
 # Step 2 & 3: Perform linear regression for each gas and extract m, c, and r² with R² alert
 calibration_curves <- function(data, r_square_threshold = 0.9) {
-  
-# Initialize an empty list to store results
+
+  # Initialize an empty list to store results
   results <- list(
     CH4 = list(c = NA, m = NA, r2 = NA),
     CO2 = list(c = NA, m = NA, r2 = NA),
@@ -54,7 +54,7 @@ calibration_curves <- function(data, r_square_threshold = 0.9) {
       alerts <- c(alerts, paste("Warning: N2O R² (", round(results$N2O$r2, 2), ") is below", r_square_threshold))
     }
   }
-  
+
   # Gas1 model (handle NAs)
   if (all(!is.na(data$Std_Gas1_PPM)) && all(!is.na(data$Std_Gas1_Peak))) {
     Gas1model <- lm(formula = Std_Gas1_PPM ~ Std_Gas1_Peak, data = data)
@@ -65,7 +65,7 @@ calibration_curves <- function(data, r_square_threshold = 0.9) {
       alerts <- c(alerts, paste("Warning: Gas1 R² (", round(results$Gas1$r2, 2), ") is below", r_square_threshold))
     }
   }
-  
+
   # Gas2 model (handle NAs)
   if (all(!is.na(data$Std_Gas2_PPM)) && all(!is.na(data$Std_Gas2_Peak))) {
     Gas2model <- lm(formula = Std_Gas2_PPM ~ Std_Gas2_Peak, data = data)
@@ -76,7 +76,7 @@ calibration_curves <- function(data, r_square_threshold = 0.9) {
       alerts <- c(alerts, paste("Warning: Gas2 R² (", round(results$Gas2$r2, 2), ") is below", r_square_threshold))
     }
   }
-  
+
   # Gas3 model (handle NAs)
   if (all(!is.na(data$Std_Gas3_PPM)) && all(!is.na(data$Std_Gas3_Peak))) {
     Gas3model <- lm(formula = Std_Gas3_PPM ~ Std_Gas3_Peak, data = data)
@@ -99,21 +99,15 @@ calibration_curves <- function(data, r_square_threshold = 0.9) {
     Intercept = sapply(results, function(x) x$c),
     Slope = sapply(results, function(x) x$m),
     R_Squared = sapply(results, function(x) x$r2)
-  )  
-  
+  )
+
   return(calibration_curve_results)
 }
-
-
-
 
 # Step 4: Calculate ppm concentrations for samples using calibration curve (ppm = m * peak + c)
 conc_calculator <- function(m, x, c) {
   m * x + c
 }
-
-
-
 
 # Main function to process the data
 peak2ppm <- function(standard_data, sample_data, r_square_threshold = 0.9) {
@@ -129,13 +123,13 @@ peak2ppm <- function(standard_data, sample_data, r_square_threshold = 0.9) {
     matching_samples <- sample_data[sample_data$GC_Run == unique(gc_run_data$GC_Run), ]
 
     # Calculate CH4, CO2, N2O, and Gas 1, 2, and 3 concentrations using the calibration curves
-    matching_samples$Sample_CH4_ppm <- conc_calculator(calibration_results$CH4$m, matching_samples$Sample_CH4_Peak, calibration_results$CH4$c)
-    matching_samples$Sample_CO2_ppm <- conc_calculator(calibration_results$CO2$m, matching_samples$Sample_CO2_Peak, calibration_results$CO2$c)
-    matching_samples$Sample_N2O_ppm <- conc_calculator(calibration_results$N2O$m, matching_samples$Sample_N2O_Peak, calibration_results$N2O$c)
-    matching_samples$Sample_Gas1_ppm <- conc_calculator(calibration_results$Gas1$m, matching_samples$Sample_Gas1_Peak, calibration_results$Gas1$c)
-    matching_samples$Sample_Gas2_ppm <- conc_calculator(calibration_results$Gas2$m, matching_samples$Sample_Gas2_Peak, calibration_results$Gas2$c)
-    matching_samples$Sample_Gas3_ppm <- conc_calculator(calibration_results$Gas3$m, matching_samples$Sample_Gas3_Peak, calibration_results$Gas3$c)
-    
+    matching_samples$Sample_CH4_ppm <- conc_calculator(calibration_results$Slope[calibration_results$Gas == "CH4"], matching_samples$Sample_CH4_Peak, calibration_results$Intercept[calibration_results$Gas == "CH4"])
+    matching_samples$Sample_CO2_ppm <- conc_calculator(calibration_results$Slope[calibration_results$Gas == "CO2"], matching_samples$Sample_CO2_Peak, calibration_results$Intercept[calibration_results$Gas == "CO2"])
+    matching_samples$Sample_N2O_ppm <- conc_calculator(calibration_results$Slope[calibration_results$Gas == "N2O"], matching_samples$Sample_N2O_Peak, calibration_results$Intercept[calibration_results$Gas == "N2O"])
+    matching_samples$Sample_Gas1_ppm <- conc_calculator(calibration_results$Slope[calibration_results$Gas == "Gas1"], matching_samples$Sample_Gas1_Peak, calibration_results$Intercept[calibration_results$Gas == "Gas1"])
+    matching_samples$Sample_Gas2_ppm <- conc_calculator(calibration_results$Slope[calibration_results$Gas == "Gas2"], matching_samples$Sample_Gas2_Peak, calibration_results$Intercept[calibration_results$Gas == "Gas2"])
+    matching_samples$Sample_Gas3_ppm <- conc_calculator(calibration_results$Slope[calibration_results$Gas == "Gas3"], matching_samples$Sample_Gas3_Peak, calibration_results$Intercept[calibration_results$Gas == "Gas3"])
+
     # Return the updated sample data with calculated concentrations
     return(matching_samples)
   })
@@ -145,6 +139,14 @@ peak2ppm <- function(standard_data, sample_data, r_square_threshold = 0.9) {
   return(combined_results)
 }
 
+
+
+# Example usage
+# final_data <- process_data(standard_data, sample_data)
+
+
+# Example usage
+# final_data <- process_data(standard_data, sample_data)
 
 
 # Example usage
