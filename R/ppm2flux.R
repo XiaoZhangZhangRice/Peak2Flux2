@@ -14,7 +14,7 @@ input_test <- read.csv("data/Input_samples_ppm.csv")
 
 # 2. Determining function ####
 
-ppm2flux <- function(data) { # function(data, method = "lm", timesteps = "4", ppm_CH4 = "CH4", Volume_L = "NA")
+ppm2flux <- function(data) { # function(data, method = "lm", timesteps = "4", ppm_CH4 = "CH4", Volume_m3 = "NA")
 
   # Arguments:
   ## Timesteps -> Number of samples (vials) collected from a chamber on each sampling event (Date&Plot).
@@ -26,8 +26,8 @@ ppm2flux <- function(data) { # function(data, method = "lm", timesteps = "4", pp
       Chamber_Temp_K = data$Chamber_Temp_C + 273,
       ID = paste0(Date, Plot),
 
-      # Here should do an if(), the following is for Volume_L = "NA", but the if() should work for Volume_L = "defined" in case the user defines volume
-      Volume_L = data$Surface_Area_cm2 * data$Height_cm / 1000000,
+      # Here should do an if(), the following is for Volume_m3 = "NA", but the if() should work for Volume_m3 = "defined" in case the user defines volume
+      Volume_m3 = data$Surface_Area_m2 * data$Height_m,
 
       # Here should do an if(), the following is for GCs returning CH4 ppm (default), but the if() should work for ppm_CH4 = "C-CH4"
       # CH4_density_g_m3 = (16.04 * 101325 / (8.314 * Chamber_Temp_K)),
@@ -36,11 +36,11 @@ ppm2flux <- function(data) { # function(data, method = "lm", timesteps = "4", pp
       N2O_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
       CO2_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
       CH4_byMass_mgm3 = (CH4_density_g_m3 * Sample_CH4_ppm) / 1000,
-      CH4_byMass_mgm2 = (CH4_byMass_mgm3 * Volume_L) / Surface_Area_cm2,
+      CH4_byMass_mgm2 = (CH4_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
       N2O_byMass_mgm3 = (N2O_density_g_m3 * Sample_N2O_ppm) / 1000,
-      N2O_byMass_mgm2 = (N2O_byMass_mgm3 * Volume_L) / Surface_Area_cm2,
+      N2O_byMass_mgm2 = (N2O_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
       CO2_byMass_mgm3 = (CO2_density_g_m3 * Sample_CO2_ppm) / 1000,
-      CO2_byMass_mgm2 = (CO2_byMass_mgm3 * Volume_L) / Surface_Area_cm2)
+      CO2_byMass_mgm2 = (CO2_byMass_mgm3 * Volume_m3) / Surface_Area_m2)
 
   # data frame for flux calculation
   flux_df <- ppm_df %>%
