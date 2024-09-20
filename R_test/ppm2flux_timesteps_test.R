@@ -1,4 +1,3 @@
-
 # f(x): ppm2flux ####
 
 # Load required packages:
@@ -7,14 +6,14 @@ library(ggplot2)
 library(ggpmisc)
 library(ggpubr)
 
-# 1. Input data frame ####
+# 1. Input dataframe ####
 
-input_test <- read.csv("Input_files/Input_samples_ppm.csv")
+input_test <- read.csv("data/Input_samples_ppm.csv")
 # input_test <- read.csv("Input_files/Input_samples_ppm_short.csv")
 
 # 2. Determining function ####
 
-ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", timesteps = "4", ppm_CH4 = "CH4", Volume_L = "NA")
+ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", Timesteps = "4", ppm_CH4 = "CH4", Volume_L = "NA")
 
   # Arguments:
   ## Timesteps -> Number of samples (vials) collected from a chamber on each sampling event (Date&Plot).
@@ -24,20 +23,21 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
   ppm_df <- data %>%
     mutate(
       Chamber_Temp_K = data$Chamber_Temp_C + 273,
+      ID = paste0(Date, Plot),
 
-      # Here should do an if(), the following is for Volume_L = "NA", but the if() should work for Volume_L = "defined" in case the user defines volume
-      Volume_L = data$Surface_Area_cm2 * data$Height_cm,
+      Volume_m3 = data$Surface_Area_m2 * data$Height_m,
 
       # Here should do an if(), the following is for GCs returning CH4 ppm (default), but the if() should work for ppm_CH4 = "C-CH4"
+
       CH4_density_g_m3 = (16 / (82.0575 * Chamber_Temp_K)) * 1000000,
       N2O_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
       CO2_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
       CH4_byMass_mgm3 = (CH4_density_g_m3 * Sample_CH4_ppm) / 1000,
-      CH4_byMass_mgm2 = (CH4_byMass_mgm3 * Volume_L) / Surface_Area_cm2,
+      CH4_byMass_mgm2 = (CH4_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
       N2O_byMass_mgm3 = (N2O_density_g_m3 * Sample_N2O_ppm) / 1000,
-      N2O_byMass_mgm2 = (N2O_byMass_mgm3 * Volume_L) / Surface_Area_cm2,
+      N2O_byMass_mgm2 = (N2O_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
       CO2_byMass_mgm3 = (CO2_density_g_m3 * Sample_CO2_ppm) / 1000,
-      CO2_byMass_mgm2 = (CO2_byMass_mgm3 * Volume_L) / Surface_Area_cm2)
+      CO2_byMass_mgm2 = (CO2_byMass_mgm3 * Volume_m3) / Surface_Area_m2)
 
   # data frame for flux calculation
   flux_df <- ppm_df %>%
@@ -70,7 +70,7 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
 
   # flux calculation
 
-  pdf('outputs/flux_test1.pdf')
+  pdf('outputs/flux_diagnostics.pdf')  # Creates a diagnostics file with plots for each ID and its alternative models
 
   for (i in 1:length(flux_df$ID)) {
     Code_i <- flux_df$ID[i]
@@ -89,7 +89,7 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
     flux_df$p_CH4[i] <- lmp_i(lm_i) # Returns p-value for each Code.
 
 
-    if (Timesteps == 4) { # in case Timestep argument is left as default
+    if (Timesteps == 4) { # in case Timesteps argument is left as default
 
     ## Loop section 2: Rate correction.
 
@@ -295,8 +295,9 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
 
     print(CH4_arrange)
 
-    } else { # in case Timestep argument is modified (not calculating alternative models)
+    } else { # in case Timesteps argument is modified (not calculating alternative models)
     }
+
   }
 
   dev.off()
@@ -305,5 +306,5 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", time
 
 }
 
-flux_df <- ppm2flux(input_test)
+flux_df <- ppm2flux(input_test, Timesteps = 4)
 
