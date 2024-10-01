@@ -13,14 +13,15 @@ input_test <- read.csv("data/Input_samples_ppm.csv")
 
 # 2. Determining function ####
 
-ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_mass = 0, Molecule_ppm = TRUE) {
+ppm2flux <- function(data, Timesteps = 4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Gas1_mass = 0,  Gas2_mass = 0, Gas3_mass = 0, Molecule_ppm = TRUE) {
 
   # Arguments:
 
   ## Timesteps -> Number of samples (vials) collected from a chamber on each sampling event (Date&Plot).
-  ##              Default: 4 - If not changed then the f(x) calculates 4 "drop-one" alternative models; if changed then the f(x) calculates only the complete model.
+  ##              Default: 4 - If not changed then the f(x) calculates 4 "drop-one" alternative models and generates a diagnostics pdf; if changed then the f(x) calculates only the complete model.
   ## Gas1/Gas2/Gas3_mass -> Molar mass of Gas molecule (or target atom if Molecule_ppm = FALSE)
-  ##              Default: 0
+  ##              Default: 16, 44, 44, 0, 0, 0. e.g. If the user wants to run the function for CH4, N2O and two additional gases then:
+  ##              CH4_mass = 16, N2O_mass = 44, CO2_mass = 0, Gas1_mass = input_number,  Gas2_mass = input_number, Gas3_mass = 0.
   ## Molecule_ppm -> Defines if the input ppm value corresponds to whole molecules (e.g. CH4) or to target atom (e.g. Carbon in the case of C-CH4 ppm)
   ##              Default: TRUE - If not changed then the f(x) assumes ppm for whole molecules (e.g. CH4) / if changed then the f(x) assumes ppm for target atom (e.g. Carbon in the case of C-CH4 ppm)
 
@@ -31,9 +32,9 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
     mutate( Chamber_Temp_K = data$Chamber_Temp_C + 273,
             ID = paste0(Date, Plot),
             Volume_m3 = data$Surface_Area_m2 * data$Height_m,
-            CH4_density_g_m3 = (16 / (82.0575 * Chamber_Temp_K)) * 1000000,
-            N2O_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
-            CO2_density_g_m3 = (44 / (82.0575 * Chamber_Temp_K)) * 1000000,
+            CH4_density_g_m3 = (CH4_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
+            N2O_density_g_m3 = (N2O_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
+            CO2_density_g_m3 = (CO2_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
             Gas1_density_g_m3 = (Gas1_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
             Gas2_density_g_m3 = (Gas2_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
             Gas3_density_g_m3 = (Gas3_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
@@ -43,38 +44,53 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
             N2O_byMass_mgm2 = (N2O_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
             CO2_byMass_mgm3 = (CO2_density_g_m3 * Sample_CO2_ppm) / 1000,
             CO2_byMass_mgm2 = (CO2_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
-            Gas1_byMass_mgm3 = (Gas1_density_g_m3 * Sample_CH4_ppm) / 1000,
+            Gas1_byMass_mgm3 = (Gas1_density_g_m3 * Sample_Gas1_ppm) / 1000,
             Gas1_byMass_mgm2 = (Gas1_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
-            Gas2_byMass_mgm3 = (Gas2_density_g_m3 * Sample_N2O_ppm) / 1000,
+            Gas2_byMass_mgm3 = (Gas2_density_g_m3 * Sample_Gas2_ppm) / 1000,
             Gas2_byMass_mgm2 = (Gas2_byMass_mgm3 * Volume_m3) / Surface_Area_m2,
-            Gas3_byMass_mgm3 = (Gas3_density_g_m3 * Sample_CO2_ppm) / 1000,
+            Gas3_byMass_mgm3 = (Gas3_density_g_m3 * Sample_Gas3_ppm) / 1000,
             Gas3_byMass_mgm2 = (Gas3_byMass_mgm3 * Volume_m3) / Surface_Area_m2)
 
   # data frame for flux calculation
   flux_df <- ppm_df %>%
-    distinct(ID, Date) # Creates data frame with unique values for certain columns
+    distinct(ID, Date) # Creates a data frame with unique values for certain columns
 
-  if (Timesteps == 4) { # in case Timestep argument is left as default
+  if (Timesteps == 4) { # in case Timesteps argument is left as default
 
-  flux_df <- cbind(empty_column1=NA,flux_df,empty_column2=NA, empty_column3=NA, empty_column4=NA, empty_column5=NA,
-                   empty_column6=NA, empty_column7=NA, empty_column8=NA, empty_column9=NA, empty_column10=NA, empty_column11=NA,
-                   empty_column12=NA, empty_column13=NA, empty_column14=NA, empty_column15=NA, empty_column16=NA, empty_column17=NA,
-                   empty_column18=NA, empty_column19=NA, empty_column20=NA, empty_column21=NA, empty_column22=NA, empty_column23=NA,
-                   empty_column24=NA, empty_column25=NA, empty_column26=NA)  ## Adds empty columns
+  # flux_df <- cbind(empty_column1=NA,flux_df,empty_column2=NA, empty_column3=NA, empty_column4=NA, empty_column5=NA,
+  #                  empty_column6=NA, empty_column7=NA, empty_column8=NA, empty_column9=NA, empty_column10=NA, empty_column11=NA,
+  #                  empty_column12=NA, empty_column13=NA, empty_column14=NA, empty_column15=NA, empty_column16=NA, empty_column17=NA,
+  #                  empty_column18=NA, empty_column19=NA, empty_column20=NA, empty_column21=NA, empty_column22=NA, empty_column23=NA,
+  #                  empty_column24=NA, empty_column25=NA, empty_column26=NA, empty_column27=NA, empty_column28=NA, empty_column29=NA,
+  #                  empty_column30=NA, empty_column31=NA, empty_column32=NA, empty_column33=NA, empty_column34=NA, empty_column35=NA)  ## Adds empty columns
 
-  colnames(flux_df) = c("Code_Nr", "ID", "Date", "CH4_flux_mgm2h", "R2_CH4", "p_CH4", "N2O_flux_mgm2h",
-                        "R2_N2O", "p_N2O", "CO2_flux_mgm2h", "R2_CO2", "p_CO2", "CH4_flux_Alt1", "R2_CH4_Alt1", "p_CH4_Alt1", "CH4_flux_Alt2",
-                        "R2_CH4_Alt2", "p_CH4_Alt2", "CH4_flux_Alt3", "R2_CH4_Alt3", "p_CH4_Alt3", "CH4_flux_Alt4", "R2_CH4_Alt4", "p_CH4_Alt4",
-                        "CH4_model", "CH4_flux_corrected", "R2_CH4_corrected", "Logic_CH4")
+  flux_df <- cbind(empty_column1=NA,flux_df)
+  new_columns <- paste0("col", 1:114) ## Adds empty columns
+  flux_df[new_columns] <- NA
+
+  colnames(flux_df) = c("Code_Nr", "ID", "Date", "CH4_flux_mgm2h", "R2_CH4", "p_CH4", "N2O_flux_mgm2h", "R2_N2O", "p_N2O", "CO2_flux_mgm2h", "R2_CO2",
+                        "p_CO2", "Gas1_flux_mgm2h", "R2_Gas1", "p_Gas1", "Gas2_flux_mgm2h", "R2_Gas2", "p_Gas2", "Gas3_flux_mgm2h", "R2_Gas3", "p_Gas3",
+                        "CH4_flux_Alt1", "R2_CH4_Alt1", "p_CH4_Alt1", "CH4_flux_Alt2", "R2_CH4_Alt2", "p_CH4_Alt2", "CH4_flux_Alt3", "R2_CH4_Alt3", "p_CH4_Alt3",
+                        "CH4_flux_Alt4", "R2_CH4_Alt4", "p_CH4_Alt4", "CH4_model", "CH4_flux_corrected", "R2_CH4_corrected", "Logic_CH4", "N2O_flux_Alt1", "R2_N2O_Alt1",
+                        "p_N2O_Alt1", "N2O_flux_Alt2", "R2_N2O_Alt2", "p_N2O_Alt2", "N2O_flux_Alt3", "R2_N2O_Alt3", "p_N2O_Alt3", "N2O_flux_Alt4", "R2_N2O_Alt4", "p_N2O_Alt4",
+                        "N2O_model", "N2O_flux_corrected", "R2_N2O_corrected", "Logic_N2O", "CO2_flux_Alt1", "R2_CO2_Alt1", "p_CO2_Alt1", "CO2_flux_Alt2",
+                        "R2_CO2_Alt2", "p_CO2_Alt2", "CO2_flux_Alt3", "R2_CO2_Alt3", "p_CO2_Alt3", "CO2_flux_Alt4", "R2_CO2_Alt4", "p_CO2_Alt4",
+                        "CO2_model", "CO2_flux_corrected", "R2_CO2_corrected", "Logic_CO2", "CO2_flux_Alt1", "R2_CO2_Alt1", "p_CO2_Alt1", "CO2_flux_Alt2",
+                        "R2_Gas1_Alt2", "p_Gas1_Alt2", "Gas1_flux_Alt3", "R2_Gas1_Alt3", "p_Gas1_Alt3", "Gas1_flux_Alt4", "R2_Gas1_Alt4", "p_Gas1_Alt4",
+                        "Gas1_model", "Gas1_flux_corrected", "R2_Gas1_corrected", "Logic_Gas1", "Gas1_flux_Alt1", "R2_Gas1_Alt1", "p_Gas1_Alt1", "Gas1_flux_Alt2",
+                        "R2_Gas2_Alt2", "p_Gas2_Alt2", "Gas2_flux_Alt3", "R2_Gas2_Alt3", "p_Gas2_Alt3", "Gas2_flux_Alt4", "R2_Gas2_Alt4", "p_Gas2_Alt4",
+                        "Gas2_model", "Gas2_flux_corrected", "R2_Gas2_corrected", "Logic_Gas2", "Gas3_flux_Alt1", "R2_Gas3_Alt1", "p_Gas3_Alt1", "Gas3_flux_Alt2",
+                        "R2_Gas3_Alt2", "p_Gas3_Alt2", "Gas3_flux_Alt3", "R2_Gas3_Alt3", "p_Gas3_Alt3", "Gas3_flux_Alt4", "R2_Gas3_Alt4", "p_Gas3_Alt4",
+                        "Gas3_model", "Gas3_flux_corrected", "R2_Gas3_corrected", "Logic_Gas3")
 
   } else { # in case Timestep argument is modified (not calculating alternative models)
 
-  flux_df <- cbind(empty_column1=NA,flux_df,empty_column2=NA, empty_column3=NA, empty_column4=NA, empty_column5=NA,
-                   empty_column6=NA, empty_column7=NA, empty_column8=NA, empty_column9=NA, empty_column10=NA, empty_column11=NA,
-                   empty_column12=NA)  ## Adds empty columns
+  flux_df <- cbind(empty_column1=NA,flux_df)
+  new_columns <- paste0("col", 1:18) ## Adds empty columns
+  flux_df[new_columns] <- NA
 
-  colnames(flux_df) = c("Code_Nr", "ID", "Date", "CH4_flux_mgm2h", "R2_CH4", "p_CH4", "N2O_flux_mgm2h",
-                        "R2_N2O", "p_N2O", "CO2_flux_mgm2h", "R2_CO2", "p_CO2")
+  colnames(flux_df) = c("Code_Nr", "ID", "Date", "CH4_flux_mgm2h", "R2_CH4", "p_CH4", "N2O_flux_mgm2h", "R2_N2O", "p_N2O", "CO2_flux_mgm2h", "R2_CO2",
+                        "p_CO2", "Gas1_flux_mgm2h", "R2_Gas1", "p_Gas1", "Gas2_flux_mgm2h", "R2_Gas2", "p_Gas2", "Gas3_flux_mgm2h", "R2_Gas3", "p_Gas3")
   }
 
   flux_df$Code_Nr <- 1:nrow(flux_df)
@@ -103,29 +119,35 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
     p_var_Alt2 <- paste0("p_", gas, "_Alt2")
     p_var_Alt3 <- paste0("p_", gas, "_Alt3")
     p_var_Alt4 <- paste0("p_", gas, "_Alt4")
+    gas_mass <- get(paste0(gas, "_mass"))
 
   for (i in 1:length(flux_df$ID)) {
     Code_i <- flux_df$ID[i]
     Filt_i <- filter(ppm_df,ppm_df$ID == Code_i) # if returned as Time-Series, re-run library(dplyr)
 
+    if (gas_mass != 0) { # Linear model will only be calculated for gases with mass defined in the f(x) arguments
+
     ## 2.1.1. Loop section 1: Rate calculation ####
-    lm_i <- lm(as.formula(paste0(mass_var, "~Time_mins")), data=Filt_i)
+    lm_i <- lm(as.formula(paste0(mass_var, "~Time_mins")), data = Filt_i)
     flux_df[[flux_var]][i] <- coef(lm_i)[2]*60 # Returns Gas_flux_mgm2h for each Code.
     flux_df[[r2_var]][i] <- summary(lm_i)$r.squared # Returns R2_Gas for each Code.
     lmp_i <- function (modelobject) {  # Function created to call later the model's p-value
       if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
       f <- summary(modelobject)$fstatistic
-      p <- pf(f[1],f[2],f[3],lower.tail=F)
+      p <- pf(f[1], f[2], f[3], lower.tail = F)
       attributes(p) <- NULL
       return(p)}
     flux_df[[p_var]][i] <- lmp_i(lm_i) # Returns p-value for each Code.
 
+    }
 
     if (Timesteps == 4) { # in case Timesteps argument is left as default
 
+    if (gas_mass != 0) {
+
 ### 2.1.2. Loop section 2: Rate correction ####
 
-    ## Fitting 4 alternative "3-values" models (each one removing one time-step) and a Log model:
+    ## Fitting 4 alternative "3-values" models (each one removing one time-step)
 
     ## Alt_1: excluding concentration from time step T0
     Filt_Alt1i <- if(is.na(Filt_i[[mass_var]][1]) == TRUE) {Filt_i} else {Filt_i[-1,]} # Filters excluding one concentration. In case there are NA
@@ -168,8 +190,8 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
     ## Loop section 2.2: Including restrictions in the loop with nested if_else:
     # Here an if else must let users define the threshold value (or if they want this restriction at all)
 
-    flux_df$CH4_flux_corrected[i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {0
-    } else if(flux_df[[r2_var]][i] > 0.7) {flux_df[[mass_va]][i]
+    flux_df[[paste0(gas, "_flux_corrected")]][i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {0
+    } else if(flux_df[[r2_var]][i] > 0.7) {flux_df[[flux_var]][i]
     } else if((flux_df[[r2_var]][i] < 0.7) & (flux_df[[r2_var_Alt1]][i] < 0.7) & (flux_df[[r2_var_Alt2]][i] < 0.7) &
               (flux_df[[r2_var_Alt3]][i] < 0.7) & (flux_df[[r2_var_Alt4]][i] < 0.7)) {0
     } else if((flux_df[[r2_var]][i] > flux_df[[r2_var_Alt1]][i]) & (flux_df[[r2_var]][i] > flux_df[[r2_var_Alt2]][i]) &
@@ -185,7 +207,7 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
     } else {0}
 
     # ## Column with chosen model:
-    flux_df$CH4_model[i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {"No flux"
+    flux_df[[paste0(gas, "_model")]][i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {"No flux"
     } else if(flux_df[[r2_var]][i] > 0.7) {"Original"
     } else if((flux_df[[r2_var]][i] < 0.7) & (flux_df[[r2_var_Alt1]][i] < 0.7) & (flux_df[[r2_var_Alt2]][i] < 0.7) &
               (flux_df[[r2_var_Alt3]][i] < 0.7) & (flux_df[[r2_var_Alt4]][i] < 0.7)) {"No flux"
@@ -202,7 +224,7 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
     } else {"No flux"}
 
     # ## Loop section 2.3: Calculating R2 according to the applied correction (if any):
-    flux_df$R2_CH4_corrected[i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {0
+    flux_df[[paste0("R2_", gas, "_corrected")]][i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {0
     } else if(flux_df[[r2_var]][i] > 0.7) {flux_df[[r2_var]][i]
     } else if((flux_df[[r2_var]][i] > flux_df[[r2_var_Alt1]][i]) & (flux_df[[r2_var]][i] > flux_df[[r2_var_Alt2]][i]) &
               (flux_df[[r2_var]][i] > flux_df[[r2_var_Alt3]][i]) & (flux_df[[r2_var]][i] > flux_df[[r2_var_Alt4]][i])) {flux_df[[r2_var]][i]
@@ -219,7 +241,7 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
     } else {0}
     #
     # ## Add column with method and rate selection logic:
-    flux_df$Logic_CH4[i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {"Original model has negative rate and R2 < 0.7"
+    flux_df[[paste0("Logic_", gas)]][i] <- if((flux_df[[r2_var]][i] < 0.7) & coef(lm_i)[2] < 0) {"Original model has negative rate and R2 < 0.7"
     } else if(flux_df[[r2_var]][i] > 0.7) {"Original model has R2 > 0.7"
     } else if((flux_df[[r2_var]][i] < 0.7) & (flux_df[[r2_var_Alt1]][i] < 0.7) & (flux_df[[r2_var_Alt2]][i] < 0.7) &
               (flux_df[[r2_var_Alt3]][i] < 0.7) & (flux_df[[r2_var_Alt4]][i] < 0.7)) {"No model achieves  R2 threshold"
@@ -244,7 +266,7 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
     ## Plot - Original values (before corrections):
     # This is the plot diagnostic section, either as an independent function or determined by an argument for users to decide if they want this output or not.
 
-    Plot_i <- ggplot(data = Filt_i, aes(x=Time_mins, y=CH4_byMass_mgm2)) +
+    Plot_i <- ggplot(data = Filt_i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
       geom_point() +
       xlab("Sample time (min)") +
       ylab(paste0(gas, " by mass (mgm2)")) +
@@ -253,12 +275,12 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
       scale_x_continuous(breaks=c(0, 10, 20, 30)) +
       stat_poly_line() +
       stat_poly_eq() +
-      annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[mass_va]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
+      annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
     # print(Plot_i)
 
     ## Plot Alt_1:
-    Plot_Alt_1 <- ggplot(data = Filt_Alt1i, aes(x=Time_mins, y=CH4_byMass_mgm2)) +
+    Plot_Alt_1 <- ggplot(data = Filt_Alt1i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
       geom_point() +
       xlab("Sample time (min)") +
       ylab(paste0(gas, " by mass (mgm2)")) +
@@ -270,7 +292,7 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
       annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt1]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
     ## Plot Alt_2:
-    Plot_Alt_2 <- ggplot(data = Filt_Alt2i, aes(x=Time_mins, y=CH4_byMass_mgm2)) +
+    Plot_Alt_2 <- ggplot(data = Filt_Alt2i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
       geom_point() +
       xlab("Sample time (min)") +
       ylab(paste0(gas, " by mass (mgm2)")) +
@@ -282,7 +304,7 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
       annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt2]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
     ## Plot Alt_3:
-    Plot_Alt_3 <- ggplot(data = Filt_Alt3i, aes(x=Time_mins, y=CH4_byMass_mgm2)) +
+    Plot_Alt_3 <- ggplot(data = Filt_Alt3i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
       geom_point() +
       xlab("Sample time (min)") +
       ylab(paste0(gas, " by mass (mgm2)")) +
@@ -294,7 +316,7 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
       annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt3]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
     ## Plot Alt_4:
-    Plot_Alt_4 <- ggplot(data = Filt_Alt4i, aes(x=Time_mins, y=CH4_byMass_mgm2)) +
+    Plot_Alt_4 <- ggplot(data = Filt_Alt4i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
       geom_point() +
       xlab("Sample time (min)") +
       ylab(paste0(gas, " by mass (mgm2)")) +
@@ -305,33 +327,16 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
       stat_poly_eq()  +
       annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt4]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
-    # ## Log Model:
-    # lm_eqn <- function(Filt_i){                                                    ## Function defined to include R2 in log fitted plot.
-    #   log_coef <- lm(CH4_byMass_mgm2~log(Time_mins+1), data=Filt_i);
-    #   eq <- substitute(italic(y) == ~~italic(R)^2~"="~r2,
-    #                    list(r2 = format(summary(log_coef)$r.squared, digits = 3)))
-    #   as.character(as.expression(eq));
-    # }
-
-    # Plot_Log <- ggplot(data = Filt_i, aes(x=Time_mins, y=CH4_byMass_mgm2)) +
-    #   geom_point() +
-    #   xlab("Sample time (min)") +
-    #   ylab("CH4 by mass (mgm2)") +
-    #   ggtitle(paste("Log Model: y~log(x+1)")) +
-    #   theme(plot.title = element_text(hjust = 0.5)) +
-    #   stat_poly_line(data = Filt_i, method="lm",formula=y~log(x+1),fill="red") +
-    #   stat_poly_eq(data = Filt_i, method="lm",formula=y~log(x+1))
+      }
 
     ## Arrange plots:
     gas_arrange <- ggarrange(Plot_i, Plot_Alt_1, Plot_Alt_2, Plot_Alt_3, Plot_Alt_4, ncol = 2, nrow = 3)
 
     print(gas_arrange)
 
-    } else { # in case Timesteps argument is modified (not calculating alternative models)
     }
-  }
-
-  }
+    }
+    }
 
   dev.off()
 
@@ -339,5 +344,6 @@ ppm2flux <- function(data, Timesteps = 4, Gas1_mass = 0,  Gas2_mass = 0, Gas3_ma
 
 }
 
-flux_df <- ppm2flux(input_test, Timesteps = 4)
+flux_df <- ppm2flux(input_test,  CO2_mass = 0, Timesteps = 5) # Test 1: Changing Timesteps - Output without alternative models nor diagnostics
+flux_df <- ppm2flux(input_test,  CO2_mass = 0) # Test 2: Keeping 4 Timesteps as default
 
