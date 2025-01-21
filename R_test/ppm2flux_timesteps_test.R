@@ -125,7 +125,7 @@ ppm2flux <- function(data, Timesteps = 4, CH4_mass = 16, N2O_mass = 44, CO2_mass
     Code_i <- flux_df$ID[i]
     Filt_i <- filter(ppm_df,ppm_df$ID == Code_i) # if returned as Time-Series, re-run library(dplyr)
 
-    if (gas_mass != 0) { # Linear model will only be calculated for gases with mass defined in the f(x) arguments
+    if (gas_mass != 0) { # Linear model will be calculated only for gases with mass defined in the f(x) arguments
 
     ## 2.1.1. Loop section 1: Rate calculation ####
     lm_i <- lm(as.formula(paste0(mass_var, "~Time_mins")), data = Filt_i)
@@ -338,9 +338,9 @@ ppm2flux <- function(data, Timesteps = 4, CH4_mass = 16, N2O_mass = 44, CO2_mass
     }
     }
 
-  dev.off()
+    dev.off()
 
-  return(flux_df)
+    return(flux_df)
 
 }
 
