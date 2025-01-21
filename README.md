@@ -10,7 +10,7 @@ Calculates GHG fluxes (mg m2 h^-1) from GHG concentrations (ppm) data frame (pea
 
 # 2. Folders and files
 
-2.1. /R: developed R scipts
-2.2. /data: input dataframes for script development
-2.3. /outputs: output files (i.e., data frames, plots, etc) from developed scripts
-2.4. /R_test: scripts under ongoing development
+- 2.1. /R: developed R scipts
+- 2.2. /data: input dataframes for script development
+- 2.3. /outputs: output files (i.e., data frames, plots, etc) from developed scripts
+- 2.4. /R_test: scripts under ongoing development
