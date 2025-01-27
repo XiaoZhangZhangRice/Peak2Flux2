@@ -1,4 +1,4 @@
-# Peak 2 FluxR Package for calculating GHG fluxes from Chromatography reads.
+# Peak2Flux R Package for calculating GHG fluxes from Chromatography reads.
 
 # 1. Project Description:
 
@@ -14,6 +14,9 @@ Calculates GHG fluxes (mg m2 h<sup>-1</sup>) from GHG concentrations (ppm) data 
 - **Gas_mass arguments**: CH4_mass; N2O_mass; CO2_mass; Gas1_mass;  Gas2_mass; Gas3_mass.
    - Default values: CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Gas1_mass = 0,  Gas2_mass = 0, Gas3_mass = 0 
    - Note: if the user's GC output is atom instead of molecule ppm data (e.g. CH<sub>4</sub>-C instead of CH<sub>4</sub>), this argument schould be the target atom's molecular weight (e.g. 12 instead of 16). 
+- **Diagnostics argument**:
+   - Allows to activate/desactivate diagnostic plots.
+   - Default value: FALSE (no diagnostic plots, plots are generated when changed to TRUE)
 
 # 2. Project Layout:
 
