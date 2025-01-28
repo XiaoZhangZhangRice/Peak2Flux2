@@ -24,7 +24,6 @@ ppm2flux <- function(data, Timesteps = 4) { # function(data, method = "lm", Time
     mutate(
       Chamber_Temp_K = data$Chamber_Temp_C + 273,
       ID = paste0(Date, Plot),
-
       Volume_m3 = data$Surface_Area_m2 * data$Height_m,
 
       # Here should do an if(), the following is for GCs returning CH4 ppm (default), but the if() should work for ppm_CH4 = "C-CH4"
