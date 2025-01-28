@@ -10,7 +10,7 @@
 
 ## Done:
 1.  **In R_test**:
-  1. **ppm2flux_timesteps_test.R**:
-  - **Timesteps argument**: by default (4) it already calculates "drop-one" alternative models and generates a diagnostics pdf. When modified, output data frame contains only original model results.
-  - **Gas_mass**: Default = 0. ppm2flux funtion will only apply to gases where this default value is changed to the gas molecular weight.
-  - **Diagnostics**: Default = FALSE. If changed to TRUE diagnostic plots are activated for gases with Gas_mass argument different to 0. Note: it only has an effect in Timesteps argument is left as default (4).
+  - **ppm2flux_timesteps_test.R**:
+    - **Timesteps argument**: by default (4) it already calculates "drop-one" alternative models and generates a diagnostics pdf. When modified, output data frame contains only original model results.
+    - **Gas_mass**: Default = 0. ppm2flux funtion will only apply to gases where this default value is changed to the gas molecular weight.
+    - **Diagnostics**: Default = FALSE. If changed to TRUE diagnostic plots are activated for gases with Gas_mass argument different to 0. Note: it only has an effect in Timesteps argument is left as default (4).
