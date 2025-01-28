@@ -1,12 +1,16 @@
 # Seba's notes:
 
 ## To do:
--  Generate an input data frame with more gases: So far we've only tested with CH4 and N2O
+- Generate an input data frame with more gases: So far we've only tested with CH4 and N2O
 - Create a **ppm2flux_threshold_test.R**:
    - "R2_Threshold" argument: the function is written with 0.7 as threshold. Define default with Zhang and modify the code so it considers alternative values if modified.
+   - Note: this test already contains arguments developed in ppm2flux_timesteps_test.R.
+- Alternative models's plots:
+  - Fix x axis labels, currently fixed in breaks=c(0, 10, 20, 30). Make it according to user's sampling timings (Time_mins of input_test).
+  - Title according to Date and Plot instead of Code.
 - Make the code leaner (e.g. try fitting alternate model calculation and plots into for loops.
 - Make the code faster (e.g. try lapply() and switch() approaches instead of for loops).
-- Make te output leaner (e.g. remove columns without calculated values (e.g. for gases where Gas_mass = 0).
+- Make the output leaner (e.g. remove columns without calculated values (e.g. for gases where Gas_mass = 0).
 
 ## Done:
 1.  **In R_test**:
