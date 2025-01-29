@@ -25,7 +25,7 @@ ppm2flux_test <- function(data,
   # data frame for flux calculation
   ppm_df <- data %>%
     mutate( Chamber_Temp_K = data$Chamber_Temp_C + 273,
-            ID = paste0(Date, Plot),
+            ID = paste0(Date,"_", Plot),
             Volume_m3 = data$Surface_Area_m2 * data$Height_m,
             CH4_density_g_m3 = (CH4_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
             N2O_density_g_m3 = (N2O_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
@@ -96,7 +96,7 @@ ppm2flux_test <- function(data,
 
   flux_df_test$Code_Nr <- 1:nrow(flux_df_test)
 
-## 1.1. Flux calculation ####
+  ## 1.1. Flux calculation ####
 
   for(gas in Gases) {
 
@@ -307,7 +307,7 @@ ppm2flux_test <- function(data,
         } else {"Alternative model achieves higher R2 but negative rate"}
 
 
- ## 1.2. Diagnostic plots ####
+        ## 1.2. Diagnostic plots ####
 
         if (Diagnostics == TRUE & gas_mass != 0) { # in case Diagnostics argument changed to TRUE: creating diagnostic plots
 
@@ -318,9 +318,9 @@ ppm2flux_test <- function(data,
             geom_point() +
             xlab("Sample time (min)") +
             ylab(paste0(gas, " by mass (mgm2)")) +
-            ggtitle(paste("Code = ", i, "; Complete")) +
+            ggtitle(paste("ID = ", Filt_i$ID[1], "; Complete")) +
             theme(plot.title = element_text(hjust = 0.5)) +
-            scale_x_continuous(breaks=c(0, 10, 20, 30)) +
+            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
             stat_poly_line() +
             stat_poly_eq() +
             annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df_test[[flux_var]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
@@ -332,7 +332,7 @@ ppm2flux_test <- function(data,
             ylab(paste0(gas, " by mass (mgm2)")) +
             ggtitle(paste("Alt. Model 1")) +
             theme(plot.title = element_text(hjust = 0.5)) +
-            scale_x_continuous(breaks=c(0, 10, 20, 30)) +
+            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
             stat_poly_line() +
             stat_poly_eq()  +
             annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df_test[[flux_var_Alt1]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
@@ -344,7 +344,7 @@ ppm2flux_test <- function(data,
             ylab(paste0(gas, " by mass (mgm2)")) +
             ggtitle(paste("Alt. Model 2")) +
             theme(plot.title = element_text(hjust = 0.5))+
-            scale_x_continuous(breaks=c(0, 10, 20, 30)) +
+            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
             stat_poly_line() +
             stat_poly_eq()  +
             annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df_test[[flux_var_Alt2]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
@@ -356,7 +356,7 @@ ppm2flux_test <- function(data,
             ylab(paste0(gas, " by mass (mgm2)")) +
             ggtitle(paste("Alt. Model 3")) +
             theme(plot.title = element_text(hjust = 0.5))+
-            scale_x_continuous(breaks = c(0, 10, 20, 30)) +
+            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
             stat_poly_line() +
             stat_poly_eq()  +
             annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df_test[[flux_var_Alt3]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
@@ -368,7 +368,7 @@ ppm2flux_test <- function(data,
             ylab(paste0(gas, " by mass (mgm2)")) +
             ggtitle(paste("Alt. Model 4")) +
             theme(plot.title = element_text(hjust = 0.5))+
-            scale_x_continuous(breaks=c(0, 10, 20, 30)) +
+            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
             stat_poly_line() +
             stat_poly_eq()  +
             annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df_test[[flux_var_Alt4]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
@@ -394,7 +394,7 @@ ppm2flux_test <- function(data,
 
 } # closing function()
 
-# 2.  Tests ####
+# 2. Tests ####
 
 input_test <- read.csv("data/Input_samples_ppm.csv")
 input_test2 <- read.csv("data/Input_samples_Nawal.csv")
