@@ -6,11 +6,7 @@ library(ggplot2)
 library(ggpmisc)
 library(ggpubr)
 
-# 1. Input dataframe ####
-
-input_test <- read.csv("data/Input_samples_ppm.csv")
-
-# 2. Determining function ####
+# 1. Determining function ####
 
 ppm2flux_test <- function(data,
                           Timesteps = 4,
@@ -100,7 +96,7 @@ ppm2flux_test <- function(data,
 
   flux_df_test$Code_Nr <- 1:nrow(flux_df_test)
 
-  ## 2.1. Flux calculation ####
+## 1.1. Flux calculation ####
 
   for(gas in Gases) {
 
@@ -136,7 +132,7 @@ ppm2flux_test <- function(data,
 
       if (gas_mass != 0) { # Linear model will be calculated only for gases with molecular weight defined in Gas_mass arguments
 
-        ### 2.1.1. Loop section 1: Rate calculation ####
+        ### 1.1.1. Loop section 1: Rate calculation ####
         lm_i <- lm(as.formula(paste0(mass_var, "~Time_mins")), data = Filt_i)
         flux_df_test[[flux_var]][i] <- coef(lm_i)[2]*60 # Returns Gas_flux_mgm2h for each Code.
         flux_df_test[[r2_var]][i] <- summary(lm_i)$r.squared # Returns R2_Gas for each Code.
@@ -152,7 +148,7 @@ ppm2flux_test <- function(data,
 
       if (Timesteps == 4 & gas_mass != 0) { # in case Timesteps argument is left as default then alternative models are calculated
 
-        ### 2.1.2. Loop section 2: Rate correction ####
+        ### 1.1.2. Loop section 2: Rate correction ####
 
         ## Fitting 4 alternative "3-values" models (each one removing one time-step)
 
@@ -310,7 +306,8 @@ ppm2flux_test <- function(data,
                    (Neg_Rate || coef(lm_Alt4i)[2] > 0)) {"Complete model has R2 < R2_Threshold and Alt. 4 achieves the highest R2 (> R2_Threshold)"
         } else {"Alternative model achieves higher R2 but negative rate"}
 
-        ## 2.2. Diagnostic plots ####
+
+ ## 1.2. Diagnostic plots ####
 
         if (Diagnostics == TRUE & gas_mass != 0) { # in case Diagnostics argument changed to TRUE: creating diagnostic plots
 
@@ -397,13 +394,21 @@ ppm2flux_test <- function(data,
 
 } # closing function()
 
-# 3.  Tests ####
+# 2.  Tests ####
+
+input_test <- read.csv("data/Input_samples_ppm.csv")
+input_test2 <- read.csv("data/Input_samples_Nawal.csv")
 
 ## Tests with CH4 and N2O ppm inputs (these must be then defined in Gas_mass arguments)
 
+# input: input_test
 flux_df_testA <- ppm2flux_test(input_test, CH4_mass = 16, N2O_mass = 44) # Test 1: Keeping all arguments as default - Output with alternative models but no diagnostics
 flux_df_testB <- ppm2flux_test(input_test, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE) # Test 2: Activating diagnostic plots - Output with alternative models and diagnostics
 flux_df_testC <- ppm2flux_test(input_test, CH4_mass = 16, N2O_mass = 44, Timesteps = 5) # Test 3: Testing Timesteps - Output without alternative models nor diagnostics
 flux_df_testD <- ppm2flux_test(input_test, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE, Timesteps = 5) # Test 4: No Diagnostics and Timesteps conflicts - Output without alternative models nor diagnostics
 flux_df_testE <- ppm2flux_test(input_test, CH4_mass = 16, N2O_mass = 44, Neg_Rate = FALSE) # Test 5: Testing Neg_Rate argument, does not consider alternative models resulting in negative rates.
 flux_df_testF <- ppm2flux_test(input_test, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE, Neg_Rate = FALSE) # Test 6: Tests Diagnostic plots with Neg_Rate modified to FALSE
+
+# input: input_test2
+flux_df_testG <- ppm2flux_test(input_test2, CH4_mass = 16, N2O_mass = 44) # Test 7: 2nd test data set. Keeping all arguments as default - Output with alternative models but no diagnostics
+flux_df_testH <- ppm2flux_test(input_test2, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE) # Test 8: Activating diagnostic plots - Output with alternative models and diagnostics
