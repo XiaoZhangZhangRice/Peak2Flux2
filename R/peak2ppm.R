@@ -1,7 +1,3 @@
-#standard_data <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Std_Input.csv")
-#str(standard_data)
-#sample_data <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_No_ppm.csv")
-
 # Step 1: Split the dataframe by GC_Run
 split_by_GC_Run <- function(data) {
   split(data, data$GC_Run)

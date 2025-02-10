@@ -1,16 +1,21 @@
 Package: Peak2Flux2
 Title: Functions for Converting Gas Chromatography Peak Areas to Concentrations, and Concentrations Over Time to Fluxes
-Version: 0.0.0.9000
-Authors@R: 
-    person("Zhenglin", "Zhang", , "zhangzhenglin2005@gmail.com", role = c("aut", "cre"),
+Version: 0.1
+Authors@R: c(
+    person("Zhenglin", "Zhang", email = "zhangzhenglin2005@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2528-5394", GitHub = "XiaoZhangZhangRice")),
-    person("Naomi Prem", "Lim", , "second.author@example.com", role = c("aut", "cre"),
+    person("Naomi Prem", "Lim", role = c("ctb"),
            comment = c(GitHub = "npremlim")),
-    person("Third", "Author", , "secheverriap@gmail.com", role = c("aut", "cre"),
+    person("Third", "Author", email = "secheverriap@gmail.com", role = c("aut"),
            comment = c(ORCID = "0000-0003-0592-9436"))
-Description: This package provides functions to convert gas chromatography peak areas into gas concentrations and then calculate gas fluxes over time. 
-             It is useful for analyzing greenhouse gas emissions or other chemical gas data obtained via chromatography.
+           )
+Description: A package to convert gas chromatography peak areas into gas concentrations and compute gas fluxes over time assuming linear fluxes. It is useful for analyzing greenhouse gas emissions or other trace gas data obtained via chromatography.
 License: MIT + file LICENSE
 Encoding: UTF-8
+Imports:
+    dplyr,
+    ggplot2,
+    ggpmisc,
+    ggpubr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
