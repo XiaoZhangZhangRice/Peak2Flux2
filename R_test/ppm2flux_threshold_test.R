@@ -26,7 +26,7 @@ ppm2flux_test <- function(data,
   ppm_df <- data %>%
     mutate( Chamber_Temp_K = data$Chamber_Temp_C + 273,
             ID = paste0(Date,"_", Plot),
-            Volume_m3 = data$Surface_Area_m2 * data$Height_m,
+            Volume_m3 = ifelse(is.na(Volume_m3), Surface_Area_m2 * Height_m, Volume_m3), # Seba 19.03.25: before modification-> Volume_m3 = data$Surface_Area_m2 * data$Height_m,
             CH4_density_g_m3 = (CH4_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
             N2O_density_g_m3 = (N2O_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
             CO2_density_g_m3 = (CO2_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
@@ -398,6 +398,8 @@ ppm2flux_test <- function(data,
 
 input_test <- read.csv("data/Input_samples_ppm.csv")
 input_test2 <- read.csv("data/Input_samples_Nawal.csv")
+input_test3 <- read.csv("data/Input_samples_Nawal2.csv") # data input contains Volume_m3 info instead of Surface_Area_m2 and Height_m
+input_test4 <- read.csv("data/Input_samples_DASIG_1.csv") # DASIG data set: 20240828_Dasig_Input, from Flooded Rice - Arkansas, USA, 2024 (test version)
 
 ## Tests with CH4 and N2O ppm inputs (these must be then defined in Gas_mass arguments)
 
@@ -412,3 +414,11 @@ flux_df_testF <- ppm2flux_test(input_test, CH4_mass = 16, N2O_mass = 44, Diagnos
 # input: input_test2
 flux_df_testG <- ppm2flux_test(input_test2, CH4_mass = 16, N2O_mass = 44) # Test 7: 2nd test data set. Keeping all arguments as default - Output with alternative models but no diagnostics
 flux_df_testH <- ppm2flux_test(input_test2, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE) # Test 8: Activating diagnostic plots - Output with alternative models and diagnostics
+
+# input: input_test3
+flux_df_testI <- ppm2flux_test(input_test3, CH4_mass = 16, N2O_mass = 44) # Test 8: Keeping all arguments as default - Output with alternative models but no diagnostics
+
+# input: input_test4
+flux_df_testJ <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # Test 9: 3rd test data set (with 5 timesteps). Keeping all arguments as default - Output with alternative models but no diagnostics
+flux_df_testK <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # Test 10: Activating diagnostic plots - Output with alternative models and diagnostics
+
