@@ -1,5 +1,5 @@
 # Cumulative emissions ####
 
-acc_test <- function(data) {
+flux2acc_test <- function(data) {
 
   }
