@@ -18,8 +18,7 @@ ppm2flux_test <- function(data,
                           Gas3_mass = 0,
                           Diagnostics = FALSE,
                           R2_Threshold = 0.7,
-                          Neg_Rate = TRUE,
-                          det_lim = 0.02) {
+                          Neg_Rate = TRUE) {
 
   Gases <- c("CH4", "N2O", "CO2", "Gas1", "Gas2", "Gas3")
 
