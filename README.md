@@ -13,7 +13,17 @@ library(devtools)
 install_github("XiaoZhangZhangRice/Peak2Flux2")
 ```
 
-# Seba's notes:
+# Notes:
+
+## Mandatory columns within input data template:
+
+- Date
+- Plot
+- Time_mins
+- Chamber_Temp_C
+- Surface_Area_m2
+- Either one of: Height_m, Volume_m3
+- At least one of: Sample_CH4_ppm, Sample_CO2_ppm, Sample_N2O_ppm, Sample_Gas1_ppm, Sample_Gas2_ppm, Sample_Gas3_ppm.
 
 ## To do:
 - Generate an input data frame with more gases: So far we've only tested with CH4 and N2O
