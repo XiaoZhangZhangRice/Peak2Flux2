@@ -18,8 +18,7 @@ ppm2flux_test <- function(data,
                           Gas3_mass = 0,
                           Diagnostics = FALSE,
                           R2_Threshold = 0.7,
-                          Neg_Rate = TRUE,
-                          det_lim = 0.02) {
+                          Neg_Rate = TRUE) {
 
   Gases <- c("CH4", "N2O", "CO2", "Gas1", "Gas2", "Gas3")
 
@@ -49,15 +48,15 @@ ppm2flux_test <- function(data,
 
   # data frame for flux calculation
   flux_df_test <- ppm_df %>%
-    distinct(ID, Date) # Creates a data frame with unique values for certain columns
+    distinct(ID, Date, Plot) # Creates a data frame with unique values for certain columns
 
   if (Timesteps == 4) { # in case Timesteps argument is left as default
 
     flux_df_test <- cbind(empty_column1 = NA, flux_df_test)
-    new_columns <- paste0("col", 1:114) ## Adds empty columns
+    new_columns <- paste0("col", 1:115) ## Adds empty columns
     flux_df_test[new_columns] <- NA
 
-    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "CH4_flux_mgm2h", "R2_CH4",
+    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "Plot", "CH4_flux_mgm2h", "R2_CH4",
                                "p_CH4", "N2O_flux_mgm2h", "R2_N2O", "p_N2O", "CO2_flux_mgm2h",
                                "R2_CO2", "p_CO2", "Gas1_flux_mgm2h", "R2_Gas1", "p_Gas1",
                                "Gas2_flux_mgm2h", "R2_Gas2", "p_Gas2", "Gas3_flux_mgm2h", "R2_Gas3",
@@ -85,10 +84,10 @@ ppm2flux_test <- function(data,
   } else { # in case Timestep argument is modified (not calculating alternative models)
 
     flux_df_test <- cbind(empty_column1 = NA, flux_df_test)
-    new_columns <- paste0("col", 1:18) ## Adds empty columns
+    new_columns <- paste0("col", 1:19) ## Adds empty columns
     flux_df_test[new_columns] <- NA
 
-    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "CH4_flux_mgm2h", "R2_CH4",
+    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "Plot", "CH4_flux_mgm2h", "R2_CH4",
                                "p_CH4", "N2O_flux_mgm2h", "R2_N2O", "p_N2O", "CO2_flux_mgm2h",
                                "R2_CO2", "p_CO2", "Gas1_flux_mgm2h", "R2_Gas1", "p_Gas1",
                                "Gas2_flux_mgm2h", "R2_Gas2", "p_Gas2", "Gas3_flux_mgm2h", "R2_Gas3",
@@ -189,63 +188,42 @@ ppm2flux_test <- function(data,
         # Here an if else must let users define the threshold value (or if they want this restriction at all)
 
         flux_df_test[[paste0(gas, "_flux_corrected")]][i] <- if((flux_df_test[[r2_var]][i] > R2_Threshold) &
-                                                                (Neg_Rate || coef(lm_i)[2] > 0) &
-                                                                (flux_df_test[[flux_var]][i] > abs(det_lim) || flux_df_test[[flux_var]][i] < -1 * abs(det_lim))) {flux_df_test[[flux_var]][i]
+                                                                (Neg_Rate || coef(lm_i)[2] > 0)) {flux_df_test[[flux_var]][i]
         } else if((flux_df_test[[r2_var]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt1]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt2]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt3]][i] < R2_Threshold) &
-                  (flux_df_test[[r2_var_Alt4]][i] < R2_Threshold) &
-                  (flux_df_test[[flux_var]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt1]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt2]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt3]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt4]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var]][i] > -1 * abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt1]][i] > -1 * abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt2]][i] > -1 * abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt3]][i] > -1 * abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt4]][i] > -1 * abs(det_lim))) {0
+                  (flux_df_test[[r2_var_Alt4]][i] < R2_Threshold)) {0
         } else if((flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                   (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                   (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt3]][i]) &
-                  (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt4]][i])) {flux_df_test[[flux_var]][i]
+                  (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt4]][i])) {flux_df_test[[mass_va]][i]
         } else if ((flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt1i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt1]][i] > abs(det_lim))) {flux_df_test[[flux_var_Alt1]][i]
+                   (Neg_Rate || coef(lm_Alt1i)[2] > 0)) {flux_df_test[[flux_var_Alt1]][i]
         } else if ((flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt2i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt2]][i] > abs(det_lim))) {flux_df_test[[flux_var_Alt2]][i]
+                   (Neg_Rate || coef(lm_Alt2i)[2] > 0))  {flux_df_test[[flux_var_Alt2]][i]
         } else if ((flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt3i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt3]][i] > abs(det_lim))) {flux_df_test[[flux_var_Alt3]][i]
+                   (Neg_Rate || coef(lm_Alt3i)[2] > 0)) {flux_df_test[[flux_var_Alt3]][i]
         } else if ((flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt3]][i]) &
-                   (Neg_Rate || coef(lm_Alt4i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt4]][i] > abs(det_lim))) {flux_df_test[[flux_var_Alt4]][i]
+                   (Neg_Rate || coef(lm_Alt4i)[2] > 0)) {flux_df_test[[flux_var_Alt4]][i]
         } else {0}
 
         # ## Column with chosen model:
         flux_df_test[[paste0(gas, "_model")]][i] <- if((flux_df_test[[r2_var]][i] > R2_Threshold) &
-                                                       (Neg_Rate || coef(lm_i)[2] > 0) &
-                                                       (flux_df_test[[flux_var]][i] > abs(det_lim) || flux_df_test[[flux_var]][i] < -1 * abs(det_lim))) {"Complete model"
+                                                       (Neg_Rate || coef(lm_i)[2] > 0)) {"Complete model"
         } else if((flux_df_test[[r2_var]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt1]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt2]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt3]][i] < R2_Threshold) &
-                  (flux_df_test[[r2_var_Alt4]][i] < R2_Threshold) &
-                  (flux_df_test[[flux_var]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt1]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt2]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt3]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt4]][i] < abs(det_lim))) {"No flux"
+                  (flux_df_test[[r2_var_Alt4]][i] < R2_Threshold)) {"No flux"
         } else if((flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                   (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                   (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt3]][i]) &
@@ -253,39 +231,28 @@ ppm2flux_test <- function(data,
         } else if ((flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt1i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt1]][i] > abs(det_lim))) {"Alternative model 1"
+                   (Neg_Rate || coef(lm_Alt1i)[2] > 0)) {"Alternative model 1"
         } else if ((flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt2i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt2]][i] > abs(det_lim))) {"Alternative model 2"
+                   (Neg_Rate || coef(lm_Alt2i)[2] > 0)) {"Alternative model 2"
         } else if ((flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt3i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt3]][i] > abs(det_lim))) {"Alternative model 3"
+                   (Neg_Rate || coef(lm_Alt3i)[2] > 0)) {"Alternative model 3"
         } else if ((flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt3]][i]) &
-                   (Neg_Rate || coef(lm_Alt4i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt4]][i] > abs(det_lim))) {"Alternative model 4"
+                   (Neg_Rate || coef(lm_Alt4i)[2] > 0)) {"Alternative model 4"
         } else {"No flux"}
 
         # ## Loop section 2.3: Calculating R2 according to the applied correction (if any):
         flux_df_test[[paste0("R2_", gas, "_corrected")]][i] <- if((flux_df_test[[r2_var]][i] > R2_Threshold) &
-                                                                  (Neg_Rate || coef(lm_i)[2] > 0) &
-                                                                  (flux_df_test[[flux_var]][i] > abs(det_lim) || flux_df_test[[flux_var]][i] < -1 * abs(det_lim))) {flux_df_test[[r2_var]][i]
-        } else if((flux_df_test[[r2_var]][i] < R2_Threshold) &
-                  (flux_df_test[[r2_var_Alt1]][i] < R2_Threshold) &
-                  (flux_df_test[[r2_var_Alt2]][i] < R2_Threshold) &
-                  (flux_df_test[[r2_var_Alt3]][i] < R2_Threshold) &
-                  (flux_df_test[[r2_var_Alt4]][i] < R2_Threshold) &
-                  (flux_df_test[[flux_var]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt1]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt2]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt3]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt4]][i] < abs(det_lim))) {flux_df_test[[r2_var]][i]
+                                                                  (Neg_Rate || coef(lm_i)[2] > 0)) {flux_df_test[[r2_var]][i]
+        } else if((flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt1]][i]) &
+                  (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt2]][i]) &
+                  (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt3]][i]) &
+                  (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt4]][i])) {flux_df_test[[r2_var]][i]
         } else if((flux_df_test[[r2_var]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt1]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt2]][i] < R2_Threshold) &
@@ -294,40 +261,29 @@ ppm2flux_test <- function(data,
         } else if ((flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt1i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt1]][i] > abs(det_lim))) {flux_df_test[[r2_var_Alt1]][i]
+                   (Neg_Rate || coef(lm_Alt1i)[2] > 0)) {flux_df_test[[r2_var_Alt1]][i]
         } else if ((flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt2i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt2]][i] > abs(det_lim))) {flux_df_test[[r2_var_Alt2]][i]
+                   (Neg_Rate || coef(lm_Alt2i)[2] > 0)) {flux_df_test[[r2_var_Alt2]][i]
         } else if ((flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt3i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt3]][i] > abs(det_lim))) {flux_df_test[[r2_var_Alt3]][i]
+                   (Neg_Rate || coef(lm_Alt3i)[2] > 0)) {flux_df_test[[r2_var_Alt3]][i]
         } else if ((flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt3]][i]) &
-                   (Neg_Rate || coef(lm_Alt4i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt4]][i] > abs(det_lim))) {flux_df_test[[r2_var_Alt4]][i]
+                   (Neg_Rate || coef(lm_Alt4i)[2] > 0)) {flux_df_test[[r2_var_Alt4]][i]
         } else {0}
 
         # ## Add column with method and rate selection logic:
         flux_df_test[[paste0("Logic_", gas)]][i] <- if((flux_df_test[[r2_var]][i] > R2_Threshold) &
-                                                       (Neg_Rate || coef(lm_i)[2] > 0) &
-                                                       (flux_df_test[[flux_var]][i] > abs(det_lim) || flux_df_test[[flux_var]][i] < -1 * abs(det_lim))) {"Complete model has R2 > R2_Threshold"
+                                                       (Neg_Rate || coef(lm_i)[2] > 0)) {"Complete model has R2 > R2_Threshold"
         } else if((flux_df_test[[r2_var]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt1]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt2]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt3]][i] < R2_Threshold) &
                   (flux_df_test[[r2_var_Alt4]][i] < R2_Threshold)) {"No model achieves  R2 threshold"
-        } else if((flux_df_test[[flux_var]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt1]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt2]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt3]][i] < abs(det_lim)) &
-                  (flux_df_test[[flux_var_Alt4]][i] < abs(det_lim))) {
-      }
         } else if((flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                   (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                   (flux_df_test[[r2_var]][i] > flux_df_test[[r2_var_Alt3]][i]) &
@@ -335,23 +291,19 @@ ppm2flux_test <- function(data,
         } else if ((flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt1]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt1i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt1]][i] > abs(det_lim))) {"Complete model has R2 < R2_Threshold and Alt. 1 achieves the highest R2 (> R2_Threshold)"
+                   (Neg_Rate || coef(lm_Alt1i)[2] > 0)) {"Complete model has R2 < R2_Threshold and Alt. 1 achieves the highest R2 (> R2_Threshold)"
         } else if ((flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt3]][i]) &
                    (flux_df_test[[r2_var_Alt2]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt2i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt2]][i] > abs(det_lim))) {"Complete model has R2 < R2_Threshold and Alt. 2 achieves the highest R2 (> R2_Threshold)"
+                   (Neg_Rate || coef(lm_Alt2i)[2] > 0)) {"Complete model has R2 < R2_Threshold and Alt. 2 achieves the highest R2 (> R2_Threshold)"
         } else if ((flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt3]][i] > flux_df_test[[r2_var_Alt4]][i]) &
-                   (Neg_Rate || coef(lm_Alt3i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt3]][i] > abs(det_lim))) {"Complete model has R2 < R2_Threshold and Alt. 3 achieves the highest R2 (> R2_Threshold)"
+                   (Neg_Rate || coef(lm_Alt3i)[2] > 0)) {"Complete model has R2 < R2_Threshold and Alt. 3 achieves the highest R2 (> R2_Threshold)"
         } else if ((flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt1]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt2]][i]) &
                    (flux_df_test[[r2_var_Alt4]][i] > flux_df_test[[r2_var_Alt3]][i]) &
-                   (Neg_Rate || coef(lm_Alt4i)[2] > 0) &
-                   (flux_df_test[[flux_var_Alt4]][i] > abs(det_lim))) {"Complete model has R2 < R2_Threshold and Alt. 4 achieves the highest R2 (> R2_Threshold)"
+                   (Neg_Rate || coef(lm_Alt4i)[2] > 0)) {"Complete model has R2 < R2_Threshold and Alt. 4 achieves the highest R2 (> R2_Threshold)"
         } else {"Alternative model achieves higher R2 but negative rate"}
 
 
