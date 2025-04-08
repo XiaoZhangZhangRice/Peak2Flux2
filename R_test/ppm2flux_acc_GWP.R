@@ -1,69 +1,87 @@
-# Step 2.2: ppm2flux - Cumulative emissions ####
+# Step 2.2: ppm2flux - Cumulative emissions and Global Warming Potential (GWP) ####
 
-# Load required packages:
-library(dplyr)
-library(zoo)
-library(tidyr)
-
-# 1. Determining function ####
+# 1.  Cumulative emissions ####
+## 1.1. Determining function ####
 
 flux2acc <- function(data) {
 
-  Gases <- c("CH4", "N2O", "CO2", "Gas1", "Gas2", "Gas3")
+  library(dplyr)
+  library(zoo)
+  library(tidyr)
+  library(stringr)
+  library(lubridate)
 
   data_name <- deparse(substitute(data))
-  output_name <- paste0("acc_", data_name) # to call resulting cumulative emissions data frame according to input data frame
 
-  flux_df <- data %>%
-    mutate(Date =as.Date(Date, format = "%d-%b-%y"))
+  gases <- c("CH4", "N2O", "CO2", "Gas1", "Gas2", "Gas3")
 
-  start_date <- min(flux_df$Date)
-  end_date <- max(flux_df$Date)
-  date_seq <- seq.Date(start_date, end_date, by = "day")
+  data <- data %>%
+    mutate(Date = parse_date_time(as.character(Date), orders = c("dmy", "mdy", "ymd"))) %>% # deal with date format parsing it into parts
+    filter(!is.na(Date))
 
-  flux_df <- flux_df %>% # fill missing dates in between sampling events
+  present_gases <- gases[gases %in% str_remove(names(data), "_flux_corrected")]
+
+  full_dates_df <- data %>%
     group_by(Plot) %>%
-    complete(Date = date_seq) %>%
-    ungroup()
+    summarise(
+      min_date = as.Date(min(Date)),
+      max_date = as.Date(max(Date)),
+      .groups = "drop"
+    ) %>%
+    rowwise() %>%
+    mutate(dates = list(seq(from = min_date, to = max_date, by = "day"))) %>%
+    unnest(dates) %>%
+    select(Plot, Date = dates)
 
-    ## 1.1. Flux interpolation ####
-  kept_gases <- c()
-  kept_emissions <- c()
+  flux_df <- full_dates_df %>%
+    left_join(data, by = c("Plot", "Date")) %>%
+    arrange(Plot, Date)
 
-  for(gas in Gases) {
+  for (gas in present_gases) {
     flux_col <- paste0(gas, "_flux_corrected")
     emission_col <- paste0(gas, "_emission_kg_ha")
 
-      if (flux_col %in% names(flux_df)) {
-        flux_df <- flux_df %>%
-          mutate("{flux_col}" := na.approx(.data[[flux_col]], rule = 2)) %>% # linear extrapolation for fluxes in between sampling events
-          mutate("{emission_col}" := .data[[flux_col]] * 0.24) %>% # from mg m-2 h-1 to kg ha-1 day-1
-          ungroup()
+    flux_df <- flux_df %>%
+      group_by(Plot) %>%
+      arrange(Date) %>%
+      mutate("{flux_col}" := na.approx(.data[[flux_col]], x = Date, na.rm = FALSE, rule = 2)) %>%
+      ungroup()
 
-        kept_gases <- c(kept_gases, flux_col)
-        kept_emissions <- c(kept_emissions, emission_col)
+    flux_df <- flux_df %>%
+      mutate("{emission_col}" := .data[[flux_col]] * 0.24)
+  }
 
-  } # closes if() for flux_col %in% names(flux_df)
-  } # closes for(gas in Gases)
+  kept_emissions <- paste0(present_gases, "_emission_kg_ha")
 
   cumulative_emissions <- flux_df %>%
     group_by(Plot) %>%
-    summarise(across(all_of(kept_emissions), ~ sum(.x, na.rm = TRUE))) %>%
-    ungroup()
-
-  assign(output_name, cumulative_emissions, envir = .GlobalEnv)
+    summarise(across(all_of(kept_emissions), ~ sum(.x, na.rm = TRUE)), .groups = "drop")
 
   flux_df <- flux_df %>%
-    select(Date, Plot, all_of(kept_gases), all_of(kept_emissions))
+    select(Date, Plot, ID, any_of(paste0(present_gases, "_flux_corrected")), any_of(kept_emissions))
 
-  return(flux_df)
+  assign(paste0("daily_", data_name), flux_df, envir = .GlobalEnv)
+  assign(paste0("acc_", data_name), cumulative_emissions, envir = .GlobalEnv)
 
-  } # closes f(x)
+  invisible(NULL)
+}
 
-# 2. Tests ####
+## 1.3. Tests ####
 # Using ppm2flux() outputs for tests
 
 # Notes:
-# - Try with input data frames with different formats for the Date column. So far "%d-%b-%y" works for format: "27-Jun-24"
+# - Try with input data frames with different formats for the Date column. So far the function works for format: "27-Jun-24"
 
-input_acc_test1 <- flux2acc(flux_df_testA)
+input_acc_test1 <- flux2acc(flux_df_testA) # ouputs: acc_flux_df_testA (cumulative emissions) and daily_flux_df_testA (linear flux interpolation).
+input_acc_test2 <- flux2acc(flux_df_testM) # ouputs: acc_flux_df_testM (cumulative emissions) and daily_flux_df_testM (linear flux interpolation).
+
+# 2. Global Warming Potential (GWP) ####
+
+flux2GWP <- function(data,
+                     CH4_eq = 27, # default CO2 equivalents according to IPCC, 2021.
+                     N2O_eq = 273) {
+
+
+
+
+}
