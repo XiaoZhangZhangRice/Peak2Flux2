@@ -1,0 +1,82 @@
+---
+title: "Example Workflow"
+author: "Zhang Zhenglin, Sebastian Echeverria"
+output:
+  pdf_document:
+    toc: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+editor_options:
+  markdown:
+    wrap: sentence
+---
+# Preamble
+
+Peak2Flux2 takes gas chromatography (GC) instrument output to calculate fluxes, specifically in greenhouse gas emissions experiments. An in development package is ready for use on GitHub. We invite you to try out the package and provide feedback to the authors of the package. 
+
+We have provided here an example workflow. Here is a data set that has measured methane (CH4) and nitrous oxide (N2O)
+
+For questions, please reach out to:
+
+Zhang Zhenglin <zhangzhenglin2005@gmail.com>
+Sebastian Echeverria <sebastian.echeverria@irta.cat>
+
+# Instll Peak2Flux2 and load package
+
+```{r}
+# Install devtools if not already installed
+if (!require("devtools")) install.packages("devtools")
+
+# Load devtools
+library(devtools)
+
+# Install the GitHub package
+install_github("XiaoZhangZhangRice/Peak2Flux2")
+
+# Note that this package has dependencies (i.e. requires other packages to work). When prompted, please install other necessary packages.
+
+# Load the package
+library(Peak2Flux2)
+#library(dplyr)
+```
+
+# Fill up the excel spreadsheets 
+
+The package is designed to take a dataframe with a specific input. Please key in your raw data as per specified in the following directory. 
+
+There are two files that needs to be populated 
+* Standard calibration file (Std_Input.csv): These are standards and their associated peak areas
+* Sample file (Input_samples_No_ppm.csv): These are samples and their associated peak areas, metadata used for chamber volume computation and other necessary information. 
+
+Note: There is a column called GC_Run. We define this a single continuously run, whereby a standard curve is generated and used to determine sample gas concentrations. The samples will be calibrated by the standards from the same "GC_Run". This is important and chromatography characteristics change due to considerations such as but not limited to, filter degradation, detector cleaniness (e.g. FID), reagent changes (e.g. nickel 63 in the the ECD). Hence standard curves generated for a single run are unique to that run and cannot be applied to other runs.
+
+# Load excel files
+
+The Standard calibration file (Std_Input.csv) and the sample file (Input_samples_No_ppm.csv) on GitHub are located in the directory: XiaoZhangZhangRice/Peak2Flux2/data
+
+```{r}
+#Read Standard Calibration File
+std <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Std_Input.csv")
+
+#Read Sample File
+samples <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_No_ppm.csv")
+```
+
+# Peak to PPM
+
+This function uses data entries in the standard calibration file to create calibration curves for each individual GC run using peak areas and gas standard ppms. Afterwards, the concentration of samples (ppm) are generated from the peak areas in the samples file and the calibration curves constructed from the standard file. 
+
+```{r}
+sample_ppm <- peak2ppm(std, samples)
+
+sample_ppm
+```
+
+# PPM to flux
+
+```{r}
+ppm2flux(sample_ppm, Timesteps = 4)
+```
+
+
