@@ -421,10 +421,10 @@ flux_df_testH <- ppm2flux_test(input_test2, CH4_mass = 16, N2O_mass = 44, Diagno
 flux_df_testI <- ppm2flux_test(input_test3, CH4_mass = 16, N2O_mass = 44) # Test 8: Keeping all arguments as default - Output with alternative models but no diagnostics
 
 # input: input_test4
-flux_df_testJ <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # Test 9: 3rd test data set (with 5 timesteps). Keeping all arguments as default - Output with alternative models but no diagnostics
+flux_df_testJ <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # Test 9: 3rd test data set (with 5 timesteps). Keeping all arguments as default -  Output without alternative models nor diagnostics
 flux_df_testK <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # Test 10: Activating diagnostic plots - Output without alternative models nor diagnostics (due to 5 timesteps within input data frame)
 
 # input: input_test5
-flux_df_testL <- ppm2flux_test(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # Test 11: 4th test data set (with 5 timesteps). Keeping all arguments as default - Output with alternative models but no diagnostics
-flux_df_testM <- ppm2flux_test(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # Test 12: Activating diagnostic plots - Output with alternative models and diagnostics
+flux_df_testL <- ppm2flux_test(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # Test 11: 4th test data set (with 5 timesteps). Keeping all arguments as default -  Output without alternative models nor diagnostics
+flux_df_testM <- ppm2flux_test(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # Test 12: Activating diagnostic plots - Output without alternative models nor diagnostics (due to 5 timesteps within input data frame)
 
