@@ -46,17 +46,18 @@ ppm2flux_test <- function(data,
             Gas3_byMass_mgm3 = (Gas3_density_g_m3 * Sample_Gas3_ppm) / 1000,
             Gas3_byMass_mgm2 = (Gas3_byMass_mgm3 * Volume_m3) / Surface_Area_m2)
 
-  # data frame for flux calculation
-  flux_df_test <- ppm_df %>%
-    distinct(ID, Date, Plot) # Creates a data frame with unique values for certain columns
+  flux_df_test_timesteps <- length(unique(ppm_df$Time_mins)) # checks timesteps within input data frame, used after as logic value to decide if alternative models should be calculated
 
-  if (Timesteps == 4) { # in case Timesteps argument is left as default
+  flux_df_test <- ppm_df %>%  # data frame for flux calculation
+    distinct(ID, Date, Plot, Treatment) # Creates a data frame with unique values for certain columns
+
+  if (Timesteps == 4 & flux_df_test_timesteps == 4) { # in case Timesteps argument is left as default and input data frame has 4 timesteps per sampling event
 
     flux_df_test <- cbind(empty_column1 = NA, flux_df_test)
-    new_columns <- paste0("col", 1:115) ## Adds empty columns
+    new_columns <- paste0("col", 1:116) ## Adds empty columns
     flux_df_test[new_columns] <- NA
 
-    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "Plot", "CH4_flux_mgm2h", "R2_CH4",
+    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "Plot", "Treatment", "CH4_flux_mgm2h", "R2_CH4",
                                "p_CH4", "N2O_flux_mgm2h", "R2_N2O", "p_N2O", "CO2_flux_mgm2h",
                                "R2_CO2", "p_CO2", "Gas1_flux_mgm2h", "R2_Gas1", "p_Gas1",
                                "Gas2_flux_mgm2h", "R2_Gas2", "p_Gas2", "Gas3_flux_mgm2h", "R2_Gas3",
@@ -84,10 +85,10 @@ ppm2flux_test <- function(data,
   } else { # in case Timestep argument is modified (not calculating alternative models)
 
     flux_df_test <- cbind(empty_column1 = NA, flux_df_test)
-    new_columns <- paste0("col", 1:19) ## Adds empty columns
+    new_columns <- paste0("col", 1:20) ## Adds empty columns
     flux_df_test[new_columns] <- NA
 
-    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "Plot", "CH4_flux_mgm2h", "R2_CH4",
+    colnames(flux_df_test) = c("Code_Nr", "ID", "Date", "Plot", "Treatment", "CH4_flux_mgm2h", "R2_CH4",
                                "p_CH4", "N2O_flux_mgm2h", "R2_N2O", "p_N2O", "CO2_flux_mgm2h",
                                "R2_CO2", "p_CO2", "Gas1_flux_mgm2h", "R2_Gas1", "p_Gas1",
                                "Gas2_flux_mgm2h", "R2_Gas2", "p_Gas2", "Gas3_flux_mgm2h", "R2_Gas3",
@@ -119,7 +120,7 @@ ppm2flux_test <- function(data,
     p_var_Alt4 <- paste0("p_", gas, "_Alt4")
     gas_mass <- get(paste0(gas, "_mass"))
 
-    if (Diagnostics == TRUE & gas_mass != 0 & Timesteps == 4) { # in case Diagnostics argument changed to TRUE
+    if (Diagnostics == TRUE & gas_mass != 0 & Timesteps == 4 & flux_df_test_timesteps == 4) { # in case Diagnostics argument changed to TRUE
 
       pdf_filename <- paste0("outputs/flux_diagnostics_", gas, ".pdf")
       pdf(file = pdf_filename)  # Creates a diagnostics file with plots for each ID and its alternative models
@@ -146,7 +147,7 @@ ppm2flux_test <- function(data,
 
       }
 
-      if (Timesteps == 4 & gas_mass != 0) { # in case Timesteps argument is left as default then alternative models are calculated
+      if (Timesteps == 4 & gas_mass != 0 & flux_df_test_timesteps == 4) { # in case Timesteps argument is left as default then alternative models are calculated
 
         ### 1.1.2. Loop section 2: Rate correction ####
 
@@ -309,7 +310,7 @@ ppm2flux_test <- function(data,
 
         ## 1.2. Diagnostic plots ####
 
-        if (Diagnostics == TRUE & gas_mass != 0) { # in case Diagnostics argument changed to TRUE: creating diagnostic plots
+        if (Diagnostics == TRUE & gas_mass != 0 & Timesteps == 4 & flux_df_test_timesteps == 4) { # in case Diagnostics argument changed to TRUE: creating diagnostic plots
 
           ## Plot - Original values (before corrections):
           # This is the plot diagnostic section, either as an independent function or determined by an argument for users to decide if they want this output or not.
@@ -381,7 +382,7 @@ ppm2flux_test <- function(data,
       } # closing if() for Timesteps (only running for default Timesteps argument)
     } # closing for() loop for each ID data subset (iterates for each ID (unique(Date&Plot)))
 
-    if (Diagnostics == TRUE & gas_mass != 0 & Timesteps == 4) { # in case Diagnostics argument modified to TRUE: activates diagnostic plots
+    if (Diagnostics == TRUE & gas_mass != 0 & Timesteps == 4 & flux_df_test_timesteps == 4) { # in case Diagnostics argument modified to TRUE: activates diagnostic plots
       dev.off()
     } # closing if() for diagnostic plots (only running if diagnostic plots are activated, i.e. argument modified to TRUE)
 
@@ -400,6 +401,7 @@ input_test <- read.csv("data/Input_samples_ppm.csv")
 input_test2 <- read.csv("data/Input_samples_Nawal.csv")
 input_test3 <- read.csv("data/Input_samples_Nawal2.csv") # data input contains Volume_m3 info instead of Surface_Area_m2 and Height_m
 input_test4 <- read.csv("data/Input_samples_DASIG_1.csv") # DASIG data set: 20240828_Dasig_Input, from Flooded Rice - Arkansas, USA, 2024 (test version)
+input_test5 <- read.csv("data/Input_samples_DASIG_2.csv") # DASIG data set: complete (05_April to 28_Aug, 2024), from Flooded Rice - Arkansas, USA, 2024 (test version)
 
 ## Tests with CH4 and N2O ppm inputs (these must be then defined in Gas_mass arguments)
 
@@ -420,5 +422,9 @@ flux_df_testI <- ppm2flux_test(input_test3, CH4_mass = 16, N2O_mass = 44) # Test
 
 # input: input_test4
 flux_df_testJ <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # Test 9: 3rd test data set (with 5 timesteps). Keeping all arguments as default - Output with alternative models but no diagnostics
-flux_df_testK <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # Test 10: Activating diagnostic plots - Output with alternative models and diagnostics
+flux_df_testK <- ppm2flux_test(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # Test 10: Activating diagnostic plots - Output without alternative models nor diagnostics (due to 5 timesteps within input data frame)
+
+# input: input_test5
+flux_df_testL <- ppm2flux_test(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # Test 11: 4th test data set (with 5 timesteps). Keeping all arguments as default - Output with alternative models but no diagnostics
+flux_df_testM <- ppm2flux_test(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # Test 12: Activating diagnostic plots - Output with alternative models and diagnostics
 

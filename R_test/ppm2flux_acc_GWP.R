@@ -1,15 +1,15 @@
 # Step 2.2: ppm2flux - Cumulative emissions and Global Warming Potential (GWP) ####
 
+library(dplyr)
+library(zoo)
+library(tidyr)
+library(stringr)
+library(lubridate)
+
 # 1.  Cumulative emissions ####
 ## 1.1. Determining function ####
 
 flux2acc <- function(data) {
-
-  library(dplyr)
-  library(zoo)
-  library(tidyr)
-  library(stringr)
-  library(lubridate)
 
   data_name <- deparse(substitute(data))
 
