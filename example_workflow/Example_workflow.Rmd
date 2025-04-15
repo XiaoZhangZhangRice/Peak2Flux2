@@ -38,7 +38,7 @@ install_github("XiaoZhangZhangRice/Peak2Flux2")
 
 # Load the package
 library(Peak2Flux2)
-#library(dplyr)
+library(dplyr)
 ```
 
 # Fill up the excel spreadsheets 
@@ -76,7 +76,7 @@ sample_ppm
 # PPM to flux
 
 ```{r}
-ppm2flux(sample_ppm, Timesteps = 4)
+Final_data <- ppm2flux_test(sample_ppm, Timesteps = 4, Diagnostics = TRUE)
 ```
 
 
