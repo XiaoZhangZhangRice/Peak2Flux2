@@ -76,7 +76,15 @@ sample_ppm
 # PPM to flux
 
 ```{r}
-Final_data <- ppm2flux_test(sample_ppm, Timesteps = 4, Diagnostics = TRUE)
+Final_data <- ppm2flux(sample_ppm, CH4_mass = 16, N2O_mass = 44, Timesteps = 4, Diagnostics = FALSE)
+```
+
+```{r}
+sample_ppm_check <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_ppm.csv")
+
+check_data <- ppm2flux(sample_ppm_check, CH4_mass = 16, N2O_mass = 44, Timesteps = 4, Diagnostics = FALSE)
+
+#generally looks okay!
 ```
 
 
