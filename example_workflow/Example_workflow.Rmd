@@ -57,10 +57,10 @@ The Standard calibration file (Std_Input.csv) and the sample file (Input_samples
 
 ```{r}
 #Read Standard Calibration File
-std <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Std_Input.csv")
+std <- read.csv("../data/Std_Input.csv")
 
 #Read Sample File
-samples <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_No_ppm.csv")
+samples <- read.csv("../data/Input_samples_No_ppm.csv")
 ```
 
 # Peak to PPM
@@ -75,16 +75,38 @@ sample_ppm
 
 # PPM to flux
 
+Either using peak2ppm() output data frame or a user created data frame with that same structure, this function converts a time series of gas concentrations in ppm into flux in mg m-2 hr-1. Calculated fluxes correspond to slopes of linear models fit to each set of concentrations sampled over time. Additionally, for cases with 4 sampled concentrations in time ("Timesteps"), the function allows correcting these calculated fluxes fitting four alternative drop-one-step models (each removing a single concentration). The function then returns as "_flux_corrected" the model (original or alternative) with highest R$^{2}$ (above a 0.7 threshold or that defined by the user in the "Threshold" argument).
+
 ```{r}
 Final_data <- ppm2flux(sample_ppm, CH4_mass = 16, N2O_mass = 44, Timesteps = 4, Diagnostics = FALSE)
 ```
 
 ```{r}
-sample_ppm_check <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_ppm.csv")
+sample_ppm_check <- read.csv("../data/Input_samples_ppm.csv")
 
 check_data <- ppm2flux(sample_ppm_check, CH4_mass = 16, N2O_mass = 44, Timesteps = 4, Diagnostics = FALSE)
 
 #generally looks okay!
 ```
 
+# flux to daily and cumulative emissions
 
+This function uses fluxes calculated with ppm2flux() function as input data frame to calculate: (i) daily fluxes in mg m-2 hr-1 in between sampling events using linear interpolation, (ii) daily emissions in kg ha-1 calculated from those daily fluxes, and (iii) cumulative emissions in kg ha-1 for all target gases. Results for i and ii are summarized within a new "daily_" data frame, as those for iii within an "acc_" data frame.
+
+```{r}
+# Load dependencies
+library(zoo)
+library(tidyr)
+library(stringr)
+library(lubridate)
+
+flux2acc(check_data)
+```
+
+# Cumulative emissions to Global Warming Potential (GWP)
+
+Using cumulative emissions calculated previously with flux2acc(), this function uses the "acc_" data frame to calculate GWP per treatment in CO$_{2-eq}$ for the complete sampling period. CO$_{2-eq}$ for CH$_{4}$ and N$_{2}$O are obtain from IPCC (2021) values for a 100 year time horizon. Nevertheless, they can be modified by users through the CH4_eq and N2O_eq arguments.
+
+```{r}
+check_data_GWP <- acc2GWP(acc_check_data)
+```
