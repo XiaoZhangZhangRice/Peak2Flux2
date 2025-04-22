@@ -19,6 +19,7 @@ install_github("XiaoZhangZhangRice/Peak2Flux2")
 
 - Date
 - Plot
+- Treatment
 - Time_mins
 - Chamber_Temp_C
 - Surface_Area_m2
