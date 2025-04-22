@@ -57,10 +57,10 @@ The Standard calibration file (Std_Input.csv) and the sample file (Input_samples
 
 ```{r}
 #Read Standard Calibration File
-std <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Std_Input.csv")
+std <- read.csv("../data/Std_Input.csv")
 
 #Read Sample File
-samples <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_No_ppm.csv")
+samples <- read.csv("../data/Input_samples_No_ppm.csv")
 ```
 
 # Peak to PPM
@@ -80,7 +80,7 @@ Final_data <- ppm2flux(sample_ppm, CH4_mass = 16, N2O_mass = 44, Timesteps = 4, 
 ```
 
 ```{r}
-sample_ppm_check <- read.csv("C:/Users/zhang/Documents/GitHub/Peak2Flux2/data/Input_samples_ppm.csv")
+sample_ppm_check <- read.csv("../data/Input_samples_ppm.csv")
 
 check_data <- ppm2flux(sample_ppm_check, CH4_mass = 16, N2O_mass = 44, Timesteps = 4, Diagnostics = FALSE)
 
