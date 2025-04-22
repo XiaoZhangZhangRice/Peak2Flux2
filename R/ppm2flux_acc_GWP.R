@@ -91,10 +91,10 @@ flux2acc <- function(data) {
 # - Try with input data frames with different formats for the Date column. So far the function works for format: "27-Jun-24"
 
 # Test 1: Using as input a dataframe with flux corrections:
-flux2acc(flux_df_testA) # ouputs: acc_flux_df_testA (cumulative emissions) and daily_flux_df_testA (linear flux interpolation).
+#flux2acc(flux_df_testA) # ouputs: acc_flux_df_testA (cumulative emissions) and daily_flux_df_testA (linear flux interpolation).
 
 # Test 2: Using as input a dataframe without flux corrections:
-flux2acc(flux_df_testM) # ouputs: acc_flux_df_testM (cumulative emissions) and daily_flux_df_testM (linear flux interpolation).
+#flux2acc(flux_df_testM) # ouputs: acc_flux_df_testM (cumulative emissions) and daily_flux_df_testM (linear flux interpolation).
 
 # 2. Global Warming Potential (GWP) ####
 ## 2.1. Determining function ####
@@ -114,5 +114,5 @@ acc2GWP <- function(data,
 }
 
 ## 2.2. Tests ####
-GWP_test1 <- acc2GWP(acc_flux_df_testA)
-GWP_test2 <- acc2GWP(acc_flux_df_testM)
+#GWP_test1 <- acc2GWP(acc_flux_df_testA)
+#GWP_test2 <- acc2GWP(acc_flux_df_testM)
