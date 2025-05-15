@@ -108,11 +108,8 @@ flux2acc <- function(data) {
 #' @importFrom dplyr %>%
 #' @export
 #' @examples
-#' # Test 1: Using as input a data rame with flux corrections:
-#' flux2acc(flux_df_testA) # ouputs: acc_flux_df_testA (cumulative emissions) and daily_flux_df_testA (linear flux interpolation).
-#'
-#' # Test 2: Using as input a data frame without flux corrections:
-#' flux2acc(flux_df_testM) # ouputs: acc_flux_df_testM (cumulative emissions) and daily_flux_df_testM (linear flux interpolation).
+#' GWP_test1 <- acc2GWP(acc_flux_df_testA)
+#' GWP_test2 <- acc2GWP(acc_flux_df_testM)
 
 acc2GWP <- function(data,
                      CH4_eq = 27, # default CO2 equivalents according to IPCC, 2021.

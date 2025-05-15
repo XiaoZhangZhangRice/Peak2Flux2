@@ -20,9 +20,6 @@ Data frame containing calculated Global Warming potential in \eqn{CO_{2}} equiva
 Global Warming potential in \eqn{CO_2} equivalents is calculated from cumulative emissions data in \eqn{kg \cdot ha^{-1}}.
 }
 \examples{
-# Test 1: Using as input a data rame with flux corrections:
-flux2acc(flux_df_testA) # ouputs: acc_flux_df_testA (cumulative emissions) and daily_flux_df_testA (linear flux interpolation).
-
-# Test 2: Using as input a data frame without flux corrections:
-flux2acc(flux_df_testM) # ouputs: acc_flux_df_testM (cumulative emissions) and daily_flux_df_testM (linear flux interpolation).
+GWP_test1 <- acc2GWP(acc_flux_df_testA)
+GWP_test2 <- acc2GWP(acc_flux_df_testM)
 }
