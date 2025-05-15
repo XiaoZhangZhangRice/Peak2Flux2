@@ -1,14 +1,14 @@
 #' Converts gas concentration data (ppm) to flux measurements.
 #'
-#' Fits linear models to input gas concentration data in ppm per sampling time in minutes (Timesteps) and calculates gas fluxes in mg m<sup>-2</sup> h<sup>-1</sup> from model slopes.
+#' Fits linear models to input gas concentration data in ppm per sampling time in minutes (Timesteps) and calculates gas fluxes in \eqn{mg \cdot m^{-2} \cdot h^{-1}} from model slopes.
 #'
 #' @param data A data frame containing gas concentration readings over time.
 #' @param Timesteps Integer indicating the number of time intervals per sampling event.
 #' @param GHG_mass Numeric vector specifying molecular weights (g/mol) for target gases (i.e., CH4_mass for \eqn{CH_4}, N2O_mass for \eqn{N_2O}, CO2_mass for \eqn{CO_2}, and Gas1_mass, Gas2_mass, and Gas3_mass for Gas1, Gas2 and Gas3, respectively).
-#' @param Diagnostics Logic indicating the need of geneerating diagnostic plots for each individual chamber sampling showing calculated rates for the complete and four alternative models. Designed only for cases in which Timesteps = 4.
-#' @param R2_Threshold Numeric vector defining an \eqn{R^2} threshold for model fitting  under which corrected fluxes (slopes) from linear models are considered as 0 (no emissions). If the user decides to omit this parameter for flux corrections then it must be changed to 0. If increased, then the more strict the correction.
+#' @param Diagnostics Logic indicating the need of generating diagnostic plots for each individual chamber sampling showing calculated rates for the complete and four alternative models. Designed only for cases in which Timesteps = 4.
+#' @param R2_Threshold Numeric vector defining an \eqn{R^2} threshold for model fitting  under which corrected fluxes (slopes) from linear models are considered as 0 (no emissions). If the user decides to omit this parameter for flux corrections then it must be changed to 0. The higher the threshold then the more strict the correction.
 #' @param Neg_Rate Logic activating additional restriction to the flux correction excluding alternative models that result in negative flux (even if resulting \eqn{R^2} is higher than that of the original model). Default is TRUE (does not consider this restriction and negative fluxes are accepted). Note: If complete models result in negative flux (and \eqn{R^2} is higher than the defined R2_Threshold) then the selected model will still be this complete model with negative flux.
-#' @return Data frame containing calculated Gas fluxes in \eqn{mg \cdot m^{-2} \cdot h^{-1}}.
+#' @return Data frame containing calculated gas fluxes in \eqn{mg \cdot m^{-2} \cdot h^{-1}}.
 #' @export
 #' @examples
 #' # Load test data set 1
