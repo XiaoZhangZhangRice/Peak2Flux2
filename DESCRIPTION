@@ -16,6 +16,10 @@ Imports:
     dplyr,
     ggplot2,
     ggpmisc,
-    ggpubr
+    ggpubr,
+    tidyr,
+    zoo,
+    stringr,
+    lubridate
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

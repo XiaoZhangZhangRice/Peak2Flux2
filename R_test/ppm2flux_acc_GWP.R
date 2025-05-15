@@ -16,11 +16,11 @@ flux2acc <- function(data) {
   gases <- c("CH4", "N2O", "CO2", "Gas1", "Gas2", "Gas3")
 
   data <- data %>%
-    mutate(Date = parse_date_time(as.character(Date), orders = c("dmy", "mdy", "ymd"))) %>% # deal with date format parsing it into parts
-    filter(!is.na(Date))
+    dplyr::mutate(Date = lubridate::parse_date_time(as.character(Date), orders = c("dmy", "mdy", "ymd"))) %>% # deal with date format parsing it into parts
+    dplyr::filter(!is.na(Date))
 
-  corrected_cols <- str_remove(names(data), "_flux_corrected")
-  mgm2h_cols <- str_remove(names(data), "_flux_mgm2h")
+  corrected_cols <- stringr::str_remove(names(data), "_flux_corrected")
+  mgm2h_cols <- stringr::str_remove(names(data), "_flux_mgm2h")
 
   present_corrected <- gases[gases %in% corrected_cols]
   present_mgm2h <- gases[gases %in% mgm2h_cols]

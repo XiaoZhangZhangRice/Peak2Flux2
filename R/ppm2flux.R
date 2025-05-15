@@ -1,14 +1,47 @@
-# Step 2.1: ppm2flux - Flux ####
-
-# Load required packages:
-library(dplyr)
-library(ggplot2)
-library(ggpmisc)
-library(ggpubr)
+#' Converts gas concentration data (ppm) to flux measurements.
+#'
+#' Fits linear models to input gas concentration data in ppm per sampling time in minutes (Timesteps) and calculates gas fluxes in mg m<sup>-2</sup> h<sup>-1</sup> from model slopes.
+#'
+#' @param data A data frame containing gas concentration readings over time.
+#' @param Timesteps Integer indicating the number of time intervals per sampling event.
+#' @param GHG_mass Numeric vector specifying molecular weights (g/mol) for target gases (i.e., CH4_mass for \eqn{CH_4}, N2O_mass for \eqn{N_2O}, CO2_mass for \eqn{CO_2}, and Gas1_mass, Gas2_mass, and Gas3_mass for Gas1, Gas2 and Gas3, respectively).
+#' @param Diagnostics Logic indicating the need of geneerating diagnostic plots for each individual chamber sampling showing calculated rates for the complete and four alternative models. Designed only for cases in which Timesteps = 4.
+#' @param R2_Threshold Numeric vector defining an \eqn{R^2} threshold for model fitting  under which corrected fluxes (slopes) from linear models are considered as 0 (no emissions). If the user decides to omit this parameter for flux corrections then it must be changed to 0. If increased, then the more strict the correction.
+#' @param Neg_Rate Logic activating additional restriction to the flux correction excluding alternative models that result in negative flux (even if resulting \eqn{R^2} is higher than that of the original model). Default is TRUE (does not consider this restriction and negative fluxes are accepted). Note: If complete models result in negative flux (and \eqn{R^2} is higher than the defined R2_Threshold) then the selected model will still be this complete model with negative flux.
+#' @return Data frame containing calculated Gas fluxes in \eqn{mg \cdot m^{-2} \cdot h^{-1}}.
+#' @export
+#' @examples
+#' # Load test data set 1
+#' data(input_test1)
+#' flux_df_testA <- ppm2flux(input_test1, CH4_mass = 16, N2O_mass = 44) # e.g. 1: Keeping all arguments as default - Output with alternative models but no diagnostics.
+#' flux_df_testB <- ppm2flux(input_test1, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE) # e.g. 2: Activating diagnostic plots - Output with alternative models and diagnostics.
+#' flux_df_testC <- ppm2flux(input_test1, CH4_mass = 16, N2O_mass = 44, Timesteps = 5) # e.g. 3: Testing Timesteps - Output without alternative models nor diagnostics.
+#' flux_df_testD <- ppm2flux(input_test1, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE, Timesteps = 5) # e.g. 4: No Diagnostics and Timesteps conflicts - Output without alternative models nor diagnostics.
+#' flux_df_testE <- ppm2flux(input_test1, CH4_mass = 16, N2O_mass = 44, Neg_Rate = FALSE) # e.g. 5: Testing Neg_Rate argument, does not consider alternative models resulting in negative rates.
+#' flux_df_testF <- ppm2flux(input_test1, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE, Neg_Rate = FALSE) # e.g. 6: Tests Diagnostic plots with Neg_Rate modified to FALSE.
+#'
+#' # Load test data set 2
+#' data(input_test2)
+#' flux_df_testG <- ppm2flux(input_test2, CH4_mass = 16, N2O_mass = 44) # e.g. 7: 2nd test data set. Keeping all arguments as default - Output with alternative models but no diagnostics.
+#' flux_df_testH <- ppm2flux(input_test2, CH4_mass = 16, N2O_mass = 44, Diagnostics = TRUE) # e.g. 8: Activating diagnostic plots - Output with alternative models and diagnostics.
+#'
+#' # Load test data set 3
+#' data(input_test3)
+#' flux_df_testI <- ppm2flux(input_test3, CH4_mass = 16, N2O_mass = 44) # e.g. 9: Keeping all arguments as default - Output with alternative models but no diagnostics.
+#'
+#' # Load test data set 4
+#' data(input_test4) # 5 timesteps; 1 sampling event
+#' flux_df_testJ <- ppm2flux(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # e.g. 10: 4th test data set (with 5 timesteps). Keeping all arguments as default - Output without alternative models nor diagnostics.
+#' flux_df_testK <- ppm2flux(input_test4, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # e.g. 11: Activating diagnostic plots - Output without alternative models nor diagnostics (due to 5 timesteps within input data frame).
+#'
+#' # Load test data set 5
+#' data(input_test5) # 5 timesteps; 16 sampling events
+#' flux_df_testL <- ppm2flux(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Timesteps = 5) # e.g. 12: 4th test data set (with 5 timesteps). Keeping all arguments as default - Output without alternative models nor diagnostics.
+#' flux_df_testM <- ppm2flux(input_test5, CH4_mass = 16, N2O_mass = 44, CO2_mass = 44, Diagnostics = TRUE) # e.g. 13: Activating diagnostic plots - Output without alternative models nor diagnostics (due to 5 timesteps within input data frame)
 
 # 1. Determining function ####
 
-ppm2flux<- function(data,
+ppm2flux <- function(data,
                           Timesteps = 4,
                           CH4_mass = 0,
                           N2O_mass = 0,
@@ -24,7 +57,7 @@ ppm2flux<- function(data,
 
   # data frame for flux calculation
   ppm_df <- data %>%
-    mutate( Chamber_Temp_K = data$Chamber_Temp_C + 273,
+    dplyr::mutate( Chamber_Temp_K = data$Chamber_Temp_C + 273,
             ID = paste0(Date,"_", Plot),
             Volume_m3 = ifelse(is.na(Volume_m3), Surface_Area_m2 * Height_m, Volume_m3), # Seba 19.03.25: before modification-> Volume_m3 = data$Surface_Area_m2 * data$Height_m,
             CH4_density_g_m3 = (CH4_mass / (82.0575 * Chamber_Temp_K)) * 1000000,
@@ -49,7 +82,7 @@ ppm2flux<- function(data,
   flux_df_test_timesteps <- length(unique(ppm_df$Time_mins)) # checks timesteps within input data frame, used after as logic value to decide if alternative models should be calculated
 
   flux_df <- ppm_df %>% # data frame for flux calculation
-    distinct(ID, Date, Plot, Treatment) # Creates a data frame with unique values for certain columns
+    dplyr::distinct(ID, Date, Plot, Treatment) # Creates a data frame with unique values for certain columns
 
   if (Timesteps == 4) { # in case Timesteps argument is left as default
 
@@ -129,7 +162,7 @@ ppm2flux<- function(data,
 
     for (i in 1:length(flux_df$ID)) {
       Code_i <- flux_df$ID[i]
-      Filt_i <- filter(ppm_df, ppm_df$ID == Code_i) # if returned as Time-Series, re-run library(dplyr)
+      Filt_i <- dplyr::filter(ppm_df, ppm_df$ID == Code_i) # if returned as Time-Series, re-run library(dplyr)
 
       if (gas_mass != 0) { # Linear model will be calculated only for gases with molecular weight defined in Gas_mass arguments
 
@@ -315,66 +348,66 @@ ppm2flux<- function(data,
           ## Plot - Original values (before corrections):
           # This is the plot diagnostic section, either as an independent function or determined by an argument for users to decide if they want this output or not.
 
-          Plot_i <- ggplot(data = Filt_i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
-            geom_point() +
-            xlab("Sample time (min)") +
-            ylab(paste0(gas, " by mass (mgm2)")) +
-            ggtitle(paste("ID = ", Filt_i$ID[1], "; Complete")) +
-            theme(plot.title = element_text(hjust = 0.5)) +
-            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
-            stat_poly_line() +
-            stat_poly_eq() +
-            annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
+          Plot_i <- ggplot2::ggplot(data = Filt_i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
+            ggplot2::geom_point() +
+            ggplot2::xlab("Sample time (min)") +
+            ggplot2::ylab(paste0(gas, " by mass (mgm2)")) +
+            ggplot2::ggtitle(paste("ID = ", Filt_i$ID[1], "; Complete")) +
+            ggplot2::theme(plot.title = element_text(hjust = 0.5)) +
+            ggplot2::scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
+            ggpmisc::stat_poly_line() +
+            ggpmisc::stat_poly_eq() +
+            ggplot2::annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
           ## Plot Alt_1:
-          Plot_Alt_1 <- ggplot(data = Filt_Alt1i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
-            geom_point() +
-            xlab("Sample time (min)") +
-            ylab(paste0(gas, " by mass (mgm2)")) +
-            ggtitle(paste("Alt. Model 1")) +
-            theme(plot.title = element_text(hjust = 0.5)) +
-            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
-            stat_poly_line() +
-            stat_poly_eq()  +
-            annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt1]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
+          Plot_Alt_1 <- ggplot2::ggplot(data = Filt_Alt1i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
+            ggplot2::geom_point() +
+            ggplot2::xlab("Sample time (min)") +
+            ggplot2::ylab(paste0(gas, " by mass (mgm2)")) +
+            ggplot2::ggtitle(paste("Alt. Model 1")) +
+            ggplot2::theme(plot.title = element_text(hjust = 0.5)) +
+            ggplot2::scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
+            ggpmisc::stat_poly_line() +
+            ggpmisc::stat_poly_eq()  +
+            ggplot2::annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt1]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
           ## Plot Alt_2:
-          Plot_Alt_2 <- ggplot(data = Filt_Alt2i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
-            geom_point() +
-            xlab("Sample time (min)") +
-            ylab(paste0(gas, " by mass (mgm2)")) +
-            ggtitle(paste("Alt. Model 2")) +
-            theme(plot.title = element_text(hjust = 0.5))+
-            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
-            stat_poly_line() +
-            stat_poly_eq()  +
-            annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt2]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
+          Plot_Alt_2 <- ggplot2::ggplot(data = Filt_Alt2i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
+            ggplot2::geom_point() +
+            ggplot2::xlab("Sample time (min)") +
+            ggplot2::ylab(paste0(gas, " by mass (mgm2)")) +
+            ggplot2::ggtitle(paste("Alt. Model 2")) +
+            ggplot2::theme(plot.title = element_text(hjust = 0.5))+
+            ggplot2::scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
+            ggpmisc::stat_poly_line() +
+            ggpmisc::stat_poly_eq()  +
+            ggplot2::annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt2]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
           ## Plot Alt_3:
-          Plot_Alt_3 <- ggplot(data = Filt_Alt3i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
-            geom_point() +
-            xlab("Sample time (min)") +
-            ylab(paste0(gas, " by mass (mgm2)")) +
-            ggtitle(paste("Alt. Model 3")) +
+          Plot_Alt_3 <- ggplot2::ggplot(data = Filt_Alt3i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
+            ggplot2::geom_point() +
+            ggplot2::xlab("Sample time (min)") +
+            ggplot2::ylab(paste0(gas, " by mass (mgm2)")) +
+            ggplot2::ggtitle(paste("Alt. Model 3")) +
             theme(plot.title = element_text(hjust = 0.5))+
-            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
-            stat_poly_line() +
-            stat_poly_eq()  +
-            annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt3]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
+            ggplot2::scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
+            ggpmisc::stat_poly_line() +
+            ggpmisc::stat_poly_eq()  +
+            ggplot2::annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt3]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
           ## Plot Alt_4:
-          Plot_Alt_4 <- ggplot(data = Filt_Alt4i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
-            geom_point() +
-            xlab("Sample time (min)") +
-            ylab(paste0(gas, " by mass (mgm2)")) +
-            ggtitle(paste("Alt. Model 4")) +
-            theme(plot.title = element_text(hjust = 0.5))+
-            scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
-            stat_poly_line() +
-            stat_poly_eq()  +
-            annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt4]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
+          Plot_Alt_4 <- ggplot2::ggplot(data = Filt_Alt4i, aes(x=Time_mins, y=!!sym(paste0(gas, "_byMass_mgm2")))) + # !!sym() to dynamically reference the column in Filt_i
+            ggplot2::geom_point() +
+            ggplot2::xlab("Sample time (min)") +
+            ggplot2::ylab(paste0(gas, " by mass (mgm2)")) +
+            ggplot2::ggtitle(paste("Alt. Model 4")) +
+            ggplot2::theme(plot.title = element_text(hjust = 0.5))+
+            ggplot2::scale_x_continuous(breaks=c(Filt_i$Time_mins[1], Filt_i$Time_mins[2], Filt_i$Time_mins[3], Filt_i$Time_mins[4])) +
+            ggpmisc::stat_poly_line() +
+            ggpmisc::stat_poly_eq()  +
+            ggplot2::annotate(geom="text", -Inf, Inf, label=paste("Rate: ", round(flux_df[[flux_var_Alt4]][i], digits = 4),"mgm2h"), hjust = -0.25, vjust = 13)
 
-          gas_arrange <- ggarrange(Plot_i, Plot_Alt_1, Plot_Alt_2, Plot_Alt_3, Plot_Alt_4, ncol = 2, nrow = 3)
+          gas_arrange <- ggpubr::ggarrange(Plot_i, Plot_Alt_1, Plot_Alt_2, Plot_Alt_3, Plot_Alt_4, ncol = 2, nrow = 3)
 
           print(gas_arrange)
 
@@ -389,7 +422,7 @@ ppm2flux<- function(data,
   } # closing for() loop for each Gas (iterates through Gases <- c("CH4", "N2O", "CO2", "Gas1", "Gas2", "Gas3"))
 
   flux_df <- flux_df %>% # removing empty columns (i.e. Gases without input data)
-    select(where(~ !all(is.na(.))))
+    dplyr::select(tidyselect::where(~ !all(is.na(.))))
 
   return(flux_df)
 
