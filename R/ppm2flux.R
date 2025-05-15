@@ -9,6 +9,7 @@
 #' @param R2_Threshold Numeric vector defining an \eqn{R^2} threshold for model fitting  under which corrected fluxes (slopes) from linear models are considered as 0 (no emissions). If the user decides to omit this parameter for flux corrections then it must be changed to 0. The higher the threshold then the more strict the correction.
 #' @param Neg_Rate Logic activating additional restriction to the flux correction excluding alternative models that result in negative flux (even if resulting \eqn{R^2} is higher than that of the original model). Default is TRUE (does not consider this restriction and negative fluxes are accepted). Note: If complete models result in negative flux (and \eqn{R^2} is higher than the defined R2_Threshold) then the selected model will still be this complete model with negative flux.
 #' @return Data frame containing calculated gas fluxes in \eqn{mg \cdot m^{-2} \cdot h^{-1}}.
+#' @importFrom dplyr %>%
 #' @export
 #' @examples
 #' # Load test data set 1
