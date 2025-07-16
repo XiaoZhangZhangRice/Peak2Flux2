@@ -20,5 +20,5 @@ Data frame containing calculated sample gas concentrations (ppm)
 Creates calibration curves using gas standards per GC run in order to determine sample concentration values
 }
 \examples{
-final_data <- peak2ppm(standard_data, sample_data)
+final_data <- peak2ppm(std, samples)
 }

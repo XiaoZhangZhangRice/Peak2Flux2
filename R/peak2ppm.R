@@ -125,7 +125,7 @@ conc_calculator <- function(m, x, c) {
 #' @importFrom dplyr %>%
 #' @export
 #' @examples
-#' final_data <- peak2ppm(standard_data, sample_data)
+#' final_data <- peak2ppm(std, samples)
 
 # Main function to process the data
 peak2ppm <- function(standard_data, sample_data, r_square_threshold = 0.9) {
