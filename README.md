@@ -93,3 +93,5 @@ Calculates GHG fluxes (mg m2 h<sup>-1</sup>) from GHG concentrations (ppm) data 
 - 2.2. /data: input dataframes for script development
 - 2.3. /outputs: output files (i.e., data frames, plots, etc) from developed scripts
 - 2.4. /R_test: scripts under ongoing development
+
+# 3. Does carbonate cause CO2 release or sequestration?
