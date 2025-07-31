@@ -95,3 +95,5 @@ Calculates GHG fluxes (mg m2 h<sup>-1</sup>) from GHG concentrations (ppm) data 
 - 2.4. /R_test: scripts under ongoing development
 
 # 3. Does carbonate cause CO2 release or sequestration?
+
+Yes it causes release.
