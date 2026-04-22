@@ -1,5 +1,9 @@
 # Peak2Flux R Package for calculating GHG fluxes from Chromatography reads.
 
+# Zhenglin Zhang
+# Shuxin Mao
+# Seba
+
 # To install this *in development* R package, please use the following commands. 
 
 ```
